@@ -1,9 +1,11 @@
-import config
 import json
+
 import web
 
-import db
+import config
+from models.source import mSource
 from models.article import mArticle
+
 
 t_globals = dict(
     datestr=web.datestr,
@@ -12,6 +14,8 @@ t_globals = dict(
 )
 render = web.template.render('templates/', cache=config.cache, globals=t_globals)
 render._keywords['globals']['render'] = render
+
+SOURCE_LIST_URL = '/source/list'
 
 
 def check_user():
@@ -23,9 +27,9 @@ def check_user():
 
 class vSource():
     def list(self, **k):
-        s = db.mSource()
+        s = mSource()
         l = s.list(**k)
-        return render.source.list(l)
+        return render.list(l)
 
     def add(self, form):
         return render.add_source(form)
@@ -52,7 +56,7 @@ class SourceList:
 
 class SourceAdd:
     def GET(self):
-        raise web.seeother('/sources')
+        raise web.seeother(SOURCE_LIST_URL)
 
     def POST(self):
         user_id = check_user()
@@ -60,37 +64,37 @@ class SourceAdd:
         url = data.addSourceUrl
         title = data.addSourceTitle or ''
         s_type = data.addSourceType
-        s = db.mSource()
+        s = mSource()
         s.add_to_user(user_id, s_type, url, title)
-        raise web.seeother('/sources')
+        raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceDelete:
     def GET(self, source_id):
-        s = db.mSource()
+        s = mSource()
         s.delete(int(source_id))
-        raise web.seeother('/sources')
+        raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceDisable:
     def GET(self, source_id):
         user_id = check_user()
-        s = db.mSource()
+        s = mSource()
         s.disable(int(source_id), user_id)
-        raise web.seeother('/sources')
+        raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceEnable:
     def GET(self, source_id):
         user_id = check_user()
-        s = db.mSource()
+        s = mSource()
         s.enable(int(source_id), user_id)
-        raise web.seeother('/sources')
+        raise web.seeother(SOURCE_LIST_URL)
 
 
 class ServiceLoadNews:
     def GET(self):
-        s = db.mService()
+        s = mSource()
         s.load_news()
         raise web.seeother('/')
 

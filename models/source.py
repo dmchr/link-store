@@ -1,10 +1,5 @@
 import config
-import datetime
 import feedparser
-import math
-import time
-
-import cl
 
 from mq import create_job
 
@@ -66,8 +61,6 @@ class mSource:
             )
         return True
 
-
-class mService:
     def load_news(self):
         rows = config.DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL")
         for source in rows:
