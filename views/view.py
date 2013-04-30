@@ -13,7 +13,12 @@ t_globals = dict(
 render = web.template.render('templates/', cache=config.cache, globals=t_globals)
 render._keywords['globals']['render'] = render
 
-user_id = 1
+
+def check_user():
+    user_id = web.web_session.user_id
+    if not user_id:
+        raise web.seeother('/login')
+    return user_id
 
 
 class vSource():
@@ -50,6 +55,7 @@ class SourceAdd:
         raise web.seeother('/sources')
 
     def POST(self):
+        user_id = check_user()
         data = web.input()
         url = data.addSourceUrl
         title = data.addSourceTitle or ''
@@ -68,6 +74,7 @@ class SourceDelete:
 
 class SourceDisable:
     def GET(self, source_id):
+        user_id = check_user()
         s = db.mSource()
         s.disable(int(source_id), user_id)
         raise web.seeother('/sources')
@@ -75,6 +82,7 @@ class SourceDisable:
 
 class SourceEnable:
     def GET(self, source_id):
+        user_id = check_user()
         s = db.mSource()
         s.enable(int(source_id), user_id)
         raise web.seeother('/sources')
@@ -89,6 +97,7 @@ class ServiceLoadNews:
 
 class ArticleRead:
     def POST(self):
+        user_id = check_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -103,12 +112,14 @@ class ArticleRead:
 
 class ArticleList:
     def GET(self, mode, page):
+        user_id = check_user()
         page = vArticle().list(mode, page, user_id)
         return render.app(page)
 
 
 class ArticleLike:
     def POST(self):
+        user_id = check_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -120,6 +131,7 @@ class ArticleLike:
 
 class ArticleDislike:
     def POST(self):
+        user_id = check_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -131,6 +143,7 @@ class ArticleDislike:
 
 class ArticleAdd():
     def GET(self):
+        user_id = check_user()
         data = web.input()
         url = data.u
         referrer = data.r
@@ -142,6 +155,15 @@ class ArticleAdd():
         return 'OK!!!'
 
 
-class Exit():
+class Login():
     def GET(self):
-        exit()
+        web.web_session.user_id = 1
+        web.web_session.username = 'Test User'
+        raise web.seeother('/article/list/all/1')
+
+
+class Logout():
+    def GET(self):
+        web.web_session.user_id = 0
+        web.web_session.kill()
+        raise web.seeother('/')

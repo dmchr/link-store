@@ -13,7 +13,8 @@ urls = (
     '/a/read', 'views.view.ArticleRead',
     '/a/like', 'views.view.ArticleLike',
     '/a/dislike', 'views.view.ArticleDislike',
-    '/exit', 'views.view.Exit'
+    '/login', 'views.view.Login',
+    '/logout', 'views.view.Logout'
 )
 
 if __name__ == "__main__":

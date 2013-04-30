@@ -43,11 +43,11 @@
                     <li><a href="/about">About</a></li>
                 </ul>
                 <ul class="nav pull-right">
-                    $if ctx.user_id == 0:
+                    $if ctx.user_id != 0:
                         <li><a href="/profile">User: <b>$ctx.username</b></a></li>
                         <li><a href="/logout">Exit</a></li>
                     $else:
-                        <li><a href="{% url 'socialauth_begin' 'twitter' %}">Sign In</a></li>
+                        <li><a href="/login">Sign In</a></li>
 
                 </ul>
             </div>
