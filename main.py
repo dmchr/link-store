@@ -3,17 +3,17 @@ import web
 urls = (
     '/', 'views.view.Index',
     '/source/list', 'views.view.SourceList',
-    '/source/add', 'view.SourceAdd',
-    '/source/delete/(\d+)', 'view.SourceDelete',
-    '/source/enable/(\d+)', 'view.SourceEnable',
-    '/source/disable/(\d+)', 'view.SourceDisable',
-    '/service/load-news', 'view.ServiceLoadNews',
+    '/source/add', 'views.view.SourceAdd',
+    '/source/delete/(\d+)', 'views.view.SourceDelete',
+    '/source/enable/(\d+)', 'views.view.SourceEnable',
+    '/source/disable/(\d+)', 'views.view.SourceDisable',
+    '/service/load-news', 'views.view.ServiceLoadNews',
     '/article/list/(.+)/(\d+)', 'views.view.ArticleList',
-    '/a/add', 'view.ArticleAdd',
-    '/a/read', 'view.ArticleRead',
-    '/a/like', 'view.ArticleLike',
-    '/a/dislike', 'view.ArticleDislike',
-    '/exit', 'view.Exit'
+    '/a/add', 'views.view.ArticleAdd',
+    '/a/read', 'views.view.ArticleRead',
+    '/a/like', 'views.view.ArticleLike',
+    '/a/dislike', 'views.view.ArticleDislike',
+    '/exit', 'views.view.Exit'
 )
 
 if __name__ == "__main__":
