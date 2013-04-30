@@ -1,0 +1,8 @@
+MySQL-python
+web.py
+feedparser
+pika
+beautifulsoup4
+readability-lxml
+cssselect
+python-social-auth

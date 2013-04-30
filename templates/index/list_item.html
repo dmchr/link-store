@@ -1,0 +1,57 @@
+$def with (item)
+
+$code:
+    def format_date(s):
+        return str(s)[:10]
+    def format_title(s):
+        max_len = 100
+        if len(s) > max_len:
+            return u'%s...' % s[:max_len]
+        else:
+            return s
+
+
+<div class="accordion-group">
+    <div class="accordion-heading">
+        <!--div class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id"-->
+        <div class="accordion-toggle">
+            $code:
+                like_label_class = ''
+                like_label_url = '/a/like'
+                like_label_text = 'Like'
+                if item.is_liked:
+                        like_label_class = 'label-success'
+                        like_label_url = '/a/dislike'
+                        like_label_text = 'Liked'
+            <a class="label $like_label_class" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(){window.location.reload();});">$like_label_text</a>
+            <a data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
+                $format_title(item.title)
+            </a>
+            <span class="pull-right">$format_date(item.published)</span>
+        </div>
+    </div>
+    <!--div class="accordion-heading">
+            <a href="$item.url" target="_blank">Source: $item.source</a>
+    </div-->
+    <div id="collapse$item.id" class="accordion-body collapse">
+        <div class="accordion-inner">
+            $:item.description
+            <div class="accordion-toggle-toolbar">
+                <a class="label $like_label_class" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(){});">$like_label_text</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $$(document).ready(function() {
+        $$('#collapse$item.id').on('shown', function () {
+            $$('html, body').scrollTop($$('#collapse$item.id').offset().top - 80);
+            $$.post(
+                "/a/read",
+                {article_id: $item.id},
+                function(data){}
+            );
+        });
+    });
+</script>

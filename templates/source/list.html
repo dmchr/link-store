@@ -1,0 +1,41 @@
+$def with (items)
+
+<h3>Source list</h3>
+
+    <div>
+        <table class="table-condensed">
+            $for item in items:
+                <tr>
+                    <td>$item.id</td>
+                    <td><img src="/static/icons/$(item.type).png"></td>
+                    <td>
+                        <a href="#">$item.title</a>
+                    </td>
+                    <td>
+                        $if not item.is_active:
+                            <span class="label label-warning">Inactive</span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-mini">Action</button>
+                            <button class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <!-- dropdown menu links -->
+
+                                $code:
+                                    if item.is_active:
+                                        enable_text = 'Disable'
+                                        enable_link = '/source/disable/%s' % item.id
+                                    else:
+                                        enable_text = 'Enable'
+                                        enable_link = '/source/enable/%s' % item.id
+                                <li><a href="$enable_link">$enable_text</a></li>
+                                <li><a href="/source/delete/$item.id">Delete</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+        </table>
+    </div>
