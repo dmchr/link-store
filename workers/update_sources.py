@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 import datetime
 import feedparser
+import os
 import pika
 import re
+import sys
 import time
-import web
 import urllib2
 from urlparse import urlparse
 
-queue = 'sources_for_update'
-DB = web.database(dbn='mysql', db='news', user='sot', pw='sot')
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parentdir)
+
+import config
+
+queue = config.que_download_article
+DB = config.DB
 
 
 def get_domain(url):

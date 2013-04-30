@@ -40,7 +40,7 @@ class vArticle():
         page = int(page)
         n = mArticle()
         lst, count = n.list(mode, page, user_id)
-        return render.index.list(lst, page, count)
+        return render.article.list(lst, page, count)
 
 
 class Index:
@@ -156,7 +156,7 @@ class ArticleAdd():
             return False
 
         art_id = mArticle().add(user_id, url, referrer)
-        return 'OK!!!'
+        return json.dumps({'success': True})
 
 
 class Login():

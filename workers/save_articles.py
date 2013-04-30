@@ -1,13 +1,19 @@
 #!/usr/bin/env python
+import os
 import pika
+import sys
 import urllib
-import web
 from readability.readability import Document
 from urlparse import urlparse
 from bs4 import BeautifulSoup
 
-queue = 'articles_for_downloads'
-DB = web.database(dbn='mysql', db='news', user='sot', pw='sot')
+parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parentdir)
+
+import config
+
+queue = config.que_download_article
+DB = config.DB
 
 
 def get_url(art_id):
@@ -48,7 +54,7 @@ def download_article(url):
 def insert_article(art_id, title, article):
     print '     Insert article: ', art_id, title
     DB.update(
-        'news.articles',
+        'articles',
         where="id=$id",
         vars={'id': int(art_id)},
         title=title,

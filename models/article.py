@@ -5,7 +5,7 @@ from mq import create_job
 
 
 class mArticle:
-    items_per_page = 15
+    items_per_page = config.items_per_page
 
     def _get_by_id(self, article_id):
         return config.DB.select('articles', where="id=$article_id", vars={'article_id': article_id})[0]
@@ -31,7 +31,7 @@ class mArticle:
         count = 0
         if mode == 'all':
             sql = """
-                SELECT n.*, l.is_liked, 'imba' source FROM articles n
+                SELECT n.*, l.is_liked, ua.sources_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 LEFT JOIN user_likes l ON n.id=l.article_id
                 ORDER BY n.id DESC
@@ -168,7 +168,7 @@ class mArticle:
             art_id = art['id']
             if not art['title']:
                 print 'Title is empty - Download article'
-                create_job('articles_for_downloads', str(art_id))
+                create_job(config.que_download_article, str(art_id))
             if not art['user_id']:
                 print 'Add article to user'
                 user_article_id = config.DB.insert('user_articles', user_id=user_id, article_id=art_id)
