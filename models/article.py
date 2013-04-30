@@ -31,15 +31,17 @@ class mArticle:
         count = 0
         if mode == 'all':
             sql = """
-                SELECT n.*, l.is_liked, ua.sources_count FROM articles n
+                SELECT n.*, l.is_liked, ua.source_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 LEFT JOIN user_likes l ON n.id=l.article_id
+                WHERE ua.user_id=$user_id
                 ORDER BY n.id DESC
                 LIMIT $limit OFFSET $offset
             """
             sql_count = """
                 SELECT count(n.id) cnt FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
+                WHERE ua.user_id=$user_id
             """
             items = config.DB.query(
                 sql,
@@ -48,10 +50,10 @@ class mArticle:
                     'limit': self.items_per_page,
                     'offset': offset}
             )
-            count = config.DB.query(sql_count)[0]['cnt']
+            #count = config.DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'unread':
             sql = """
-                SELECT n.*, l.is_liked, 'imba' source FROM articles n
+                SELECT n.*, l.is_liked, ua.source_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 LEFT JOIN user_reads r ON n.id=r.article_id
                 LEFT JOIN user_likes l ON n.id=l.article_id
@@ -75,7 +77,7 @@ class mArticle:
             count = config.DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'read':
             sql = """
-                SELECT n.*, l.is_liked, 'imba' source FROM articles n
+                SELECT n.*, l.is_liked, ua.source_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 JOIN user_reads r ON n.id=r.article_id AND r.user_id=$user_id
                 LEFT JOIN user_likes l ON n.id=l.article_id
@@ -97,7 +99,7 @@ class mArticle:
             count = config.DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'liked':
             sql = """
-                SELECT n.*, l.is_liked, 'imba' source FROM articles n
+                SELECT n.*, l.is_liked, ua.source_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 JOIN user_likes l ON n.id=l.article_id AND l.is_liked=1
                 WHERE ua.user_id=$user_id

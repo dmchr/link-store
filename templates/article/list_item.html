@@ -31,13 +31,14 @@ $code:
         </div>
     </div>
     <!--div class="accordion-heading">
-            <a href="$item.url" target="_blank">Source: $item.source</a>
+            <a href="$item.url" target="_blank">Sources: $item.source_count</a>
     </div-->
     <div id="collapse$item.id" class="accordion-body collapse">
         <div class="accordion-inner">
             $:item.description
             <div class="accordion-toggle-toolbar">
                 <a class="label $like_label_class" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(){});">$like_label_text</a>
+                <a class="label">Sources: $item.source_count</a>
             </div>
         </div>
     </div>
