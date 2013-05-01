@@ -1,6 +1,17 @@
+import os
 import web
 
-DB = web.database(dbn='mysql', db='news', user='sot', pw='sot')
+
+def is_test():
+    if 'WEBPY_ENV' in os.environ:
+        return os.environ['WEBPY_ENV'] == 'test'
+    return True
+
+if not is_test():
+    DB = web.database(dbn='mysql', db='news', user='sot', pw='sot')
+else:
+    DB = web.database(dbn='mysql', db='news_test', user='sot', pw='sot')
+
 cache = False
 
 items_per_page = 5

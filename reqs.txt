@@ -6,3 +6,5 @@ beautifulsoup4
 readability-lxml
 cssselect
 python-social-auth
+nose
+coverage
