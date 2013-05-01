@@ -52,7 +52,7 @@ def download_article(url):
 
 
 def insert_article(art_id, title, article):
-    print '     Insert article: ', art_id, title
+    print '     Update article: ', art_id, title
     DB.update(
         'articles',
         where="id=$id",

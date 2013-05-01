@@ -14,7 +14,7 @@ parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parentdir)
 
 import config
-from models.article import mArticle
+from models.article import ArticleFactory
 
 queue = config.que_download_article
 DB = config.DB
@@ -86,7 +86,7 @@ def save_urls(parent_article_id, source_id, urls):
         return False
     for url in urls:
         print 'Save url: %s' % url
-        article_id = mArticle().add(url)
+        article_id = ArticleFactory().add(url)
 
         items = DB.select('user_sources', where="source_id=$source_id", vars={'source_id': source_id})
         for item in items:

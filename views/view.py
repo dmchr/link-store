@@ -4,7 +4,7 @@ import web
 
 import config
 from models.source import mSource
-from models.article import mArticle
+from models.article import ArticleFactory
 
 
 t_globals = dict(
@@ -92,7 +92,7 @@ class ArticleRead:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = mArticle()
+        n = ArticleFactory()
         n.read(article_id, user_id)
         return json.dumps({'success': True})
 
@@ -103,7 +103,7 @@ class ArticleRead:
 class ArticleList:
     def list(self, mode, page, user_id):
         page = int(page)
-        n = mArticle()
+        n = ArticleFactory()
         lst, count = n.list(mode, page, user_id)
         return render.article.list(lst, page, count)
 
@@ -120,7 +120,7 @@ class ArticleLike:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = mArticle()
+        n = ArticleFactory()
         n.like(article_id, user_id)
         return json.dumps({'success': True})
 
@@ -132,7 +132,7 @@ class ArticleDislike:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = mArticle()
+        n = ArticleFactory()
         n.dislike(article_id, user_id)
         return json.dumps({'success': True})
 
@@ -147,7 +147,7 @@ class ArticleAdd():
         if not url:
             return False
 
-        article_id = mArticle().add(url, user_id, location_type='browser', location=referrer)
+        article_id = ArticleFactory().add(url, user_id, location_type='browser', location=referrer)
         return json.dumps({'success': True, 'article_id': article_id})
 
 
