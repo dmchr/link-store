@@ -25,33 +25,19 @@ def check_user():
     return user_id
 
 
-class vSource():
-    def list(self, **k):
-        s = mSource()
-        l = s.list(**k)
-        return render.list(l)
-
-    def add(self, form):
-        return render.add_source(form)
-
-
-class vArticle():
-    def list(self, mode, page, user_id):
-        page = int(page)
-        n = mArticle()
-        lst, count = n.list(mode, page, user_id)
-        return render.article.list(lst, page, count)
-
-
 class Index:
     def GET(self):
         return render.base()
 
 
 class SourceList:
+    def list(self, **k):
+        s = mSource()
+        l = s.list(**k)
+        return render.list(l)
+
     def GET(self):
-        s = vSource()
-        return render.app(s.list())
+        return render.app(self.list())
 
 
 class SourceAdd:
@@ -115,9 +101,15 @@ class ArticleRead:
 
 
 class ArticleList:
+    def list(self, mode, page, user_id):
+        page = int(page)
+        n = mArticle()
+        lst, count = n.list(mode, page, user_id)
+        return render.article.list(lst, page, count)
+
     def GET(self, mode, page):
         user_id = check_user()
-        page = vArticle().list(mode, page, user_id)
+        page = self.list(mode, page, user_id)
         return render.app(page)
 
 
