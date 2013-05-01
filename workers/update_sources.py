@@ -18,6 +18,7 @@ from models.article import mArticle
 
 queue = config.que_download_article
 DB = config.DB
+twitter_feed_url = config.twitter_feed_url
 
 
 def get_domain(url):
@@ -145,7 +146,7 @@ def update_twitter(source):
         return content, urls_for_save
 
     print source.url
-    url = 'http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s' % source.url
+    url = twitter_feed_url % source.url
     res = feedparser.parse(url)
 
     for item in res['entries']:

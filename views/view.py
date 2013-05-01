@@ -155,8 +155,8 @@ class ArticleAdd():
         if not url:
             return False
 
-        art_id = mArticle().add(user_id, url, referrer)
-        return json.dumps({'success': True})
+        article_id = mArticle().add(url, user_id, location_type='browser', location=referrer)
+        return json.dumps({'success': True, 'article_id': article_id})
 
 
 class Login():
