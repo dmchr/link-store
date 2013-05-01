@@ -5,7 +5,7 @@ $code:
         return str(s)[:10]
     def format_title(s):
         max_len = 100
-        if len(s) > max_len:
+        if s and len(s) > max_len:
             return u'%s...' % s[:max_len]
         else:
             return s

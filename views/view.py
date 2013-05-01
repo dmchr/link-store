@@ -34,7 +34,7 @@ class SourceList:
     def list(self, **k):
         s = mSource()
         l = s.list(**k)
-        return render.list(l)
+        return render.source.list(l)
 
     def GET(self):
         return render.app(self.list())
