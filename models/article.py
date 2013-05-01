@@ -145,13 +145,15 @@ class mArticle:
         else:
             like_mark = liked_news[0]['is_liked']
             if like_mark != is_liked:
-                config.DB.update('user_likes',
-                                 where="user_id=$user_id AND article_id=$article_id",
-                                 vars={
-                                     'user_id': int(user_id),
-                                     'article_id': int(article_id)
-                                 },
-                                 is_liked=is_liked)
+                config.DB.update(
+                    'user_likes',
+                    where="user_id=$user_id AND article_id=$article_id",
+                    vars={
+                        'user_id': int(user_id),
+                        'article_id': int(article_id)
+                    },
+                    is_liked=is_liked
+                )
 
         clf = cl.NewsParser()
         item = cl.NewsItem()
@@ -162,25 +164,29 @@ class mArticle:
     def dislike(self, article_id, user_id):
         return self.like(article_id, user_id, 0)
 
-    def add(self, user_id, url, location_type=None, localtion=None):
+    def add(self, url, user_id=None, location_type=None, location=None):
         art = self._get_by_url(url, user_id)
         if art:
             print 'Article exists'
             art = art[0]
-            art_id = art['id']
-            if not art['title']:
+            article_id = art.id
+            if not art.title:
                 print 'Title is empty - Download article'
-                create_job(config.que_download_article, str(art_id))
-            if not art['user_id']:
-                print 'Add article to user'
-                user_article_id = config.DB.insert('user_articles', user_id=user_id, article_id=art_id)
-            if location_type and localtion:
-                self.add_article_location(user_article_id, location_type, localtion)
+                create_job(config.que_download_article, str(article_id))
+            if user_id and not art.user_id:
+                self.add_article_to_user(article_id, user_id, location_type, location)
         else:
             print 'Insert article'
-            art_id = config.DB.insert('articles', url=url)
-            create_job('articles_for_downloads', str(art_id))
-        return art_id
+            article_id = config.DB.insert('articles', url=url)
+            create_job('articles_for_downloads', str(article_id))
+        return article_id
+
+    def add_article_to_user(self, article_id, user_id, location_type=None, location=None):
+        print 'Add article to user'
+        user_article_id = config.DB.insert('user_articles', user_id=user_id, article_id=article_id)
+
+        if location_type and location:
+            self.add_article_location(user_article_id, location_type, location)
 
     def add_article_location(self, user_article_id, location_type, location):
         return config.DB.insert(
