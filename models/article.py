@@ -5,6 +5,10 @@ from mq import create_job
 DB = config.DB
 
 
+class ArticleException(Exception):
+    pass
+
+
 class Article:
     id = None
     url = None
@@ -12,18 +16,23 @@ class Article:
     description = None
 
     def __init__(self, article_id=None, url=None, title=None, description=None):
-        if article_id:
-            if url:
-                self.id = article_id
-                self.url = url
-                self.title = title
-                self.description = description
+        if article_id and url:
+            self.id = article_id
+
+        self.url = url
+        self.title = title
+        self.description = description
+
+        if article_id and not url:
+            res = DB.select('articles', where="id=$article_id", vars={'article_id': article_id})
+            if res:
+                a = res[0]
+                self.id = a.id
+                self.url = a.url
+                self.title = a.title
+                self.description = a.description
             else:
-                res = DB.select('articles', where="id=$article_id", vars={'article_id': article_id})[0]
-                self.id = res.id
-                self.url = res.url
-                self.title = res.title
-                self.description = res.description
+                raise ArticleException("Can't load article with id=%s" % article_id)
 
     def save(self):
         if self.id:
@@ -36,15 +45,66 @@ class Article:
                 description=self.description
             )
         else:
-            article_id = DB.insert('articles', url=self.url, title=self.title, description=self.description)
-            if article_id:
-                self.id = article_id
-            else:
-                return False
+            self.id = DB.insert('articles', url=self.url, title=self.title, description=self.description)
         return True
 
     def get_urls_from_description(self):
         return []
+
+
+class UserArticle:
+    id = None
+    user_id = None
+    article_id = None
+    source_count = None
+
+    def __init__(self, user_article_id=None, user_id=None, article_id=None):
+        if user_article_id:
+            self.id = user_article_id
+            self._load_attrs()
+        elif user_id and article_id:
+            res = DB.select('user_articles',
+                            where="user_id=$user_id AND article_id=$article_id",
+                            vars={'user_id': user_id, 'article_id': article_id})
+            if res:
+                self._set_attrs(res[0])
+            else:
+                self.id = DB.insert('user_articles', user_id=user_id, article_id=article_id)
+                self._load_attrs()
+        else:
+            raise ArticleException("Can't create UserArticle without attributes")
+
+    def __getattr__(self, name):
+        if name == 'article':
+            self._load_article()
+        return getattr(self, name)
+
+    def _set_attrs(self, row):
+        if not self.id:
+            self.id = row.id
+        self.user_id = row.user_id
+        self.article_id = row.article_id
+        self.source_count = row.source_count
+
+    def _load_attrs(self):
+        res = DB.select('user_articles', where="id=$user_article_id", vars={'user_article_id': self.id})
+        if res:
+            self._set_attrs(res[0])
+        else:
+            raise ArticleException("Can't load UserArticle with id=%s" % self.id)
+
+    def _load_article(self):
+        if not self.article_id:
+            raise ArticleException("Add article_id before load")
+        self.article = Article(self.article_id)
+
+    def add_location(self, location_type, location):
+        return DB.insert(
+            'articles_locations',
+            user_article_id=self.id,
+            location_type=location_type,
+            location=location
+        )
 
 
 class ArticleFactory:
@@ -70,7 +130,8 @@ class ArticleFactory:
     def _get_obj_by_url(self, url, user_id=None):
         res = self._get_by_url(url, user_id)
         if res:
-            article = Article(res.id, res.url, res.title, res.description)
+            a = res[0]
+            article = Article(a.id, a.url, a.title, a.description)
             return article
         return False
 
@@ -115,7 +176,7 @@ class ArticleFactory:
                 SELECT count(n.id) cnt FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
                 LEFT JOIN user_reads r ON n.id=r.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL r.id IS NULL
+                WHERE ua.user_id=$user_id AND n.title IS NOT NULL AND r.id IS NULL
             """
             items = DB.query(
                 sql,
@@ -215,31 +276,18 @@ class ArticleFactory:
     def add(self, url, user_id=None, location_type=None, location=None):
         art = self._get_obj_by_url(url, user_id)
         if art:
-            print 'Article exists'
-            art = art[0]
             article_id = art.id
             if not art.title:
-                print 'Title is empty - Download article'
                 create_job(config.que_download_article, str(article_id))
             if user_id and not art.user_id:
                 self.add_article_to_user(article_id, user_id, location_type, location)
         else:
-            print 'Insert article'
             article_id = DB.insert('articles', url=url)
-            create_job('articles_for_downloads', str(article_id))
+            create_job(config.que_download_article, str(article_id))
         return article_id
 
     def add_article_to_user(self, article_id, user_id, location_type=None, location=None):
-        print 'Add article to user'
-        user_article_id = DB.insert('user_articles', user_id=user_id, article_id=article_id)
-
+        ua = UserArticle(user_id=user_id, article_id=article_id)
         if location_type and location:
-            self.add_article_location(user_article_id, location_type, location)
-
-    def add_article_location(self, user_article_id, location_type, location):
-        return DB.insert(
-            'articles_locations',
-            user_article_id=user_article_id,
-            location_type=location_type,
-            location=location
-        )
+            ua.add_location(location_type, location)
+        return True
