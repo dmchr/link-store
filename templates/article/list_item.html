@@ -20,25 +20,23 @@ $code:
                 like_label_url = '/a/like'
                 like_label_text = 'Like'
                 if item.is_liked:
-                        like_label_class = 'label-success'
-                        like_label_url = '/a/dislike'
-                        like_label_text = 'Liked'
-            <a class="label $like_label_class" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(){window.location.reload();});">$like_label_text</a>
+                    like_label_class = 'label-success'
+                    like_label_url = '/a/dislike'
+                    like_label_text = 'Liked'
+            <a class="label $like_label_class" data-likebutton="$item.id" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(data){toggleLikeButton('$item.id', data);});">$like_label_text</a>
             <a data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
                 $format_title(item.title)
             </a>
             <span class="pull-right">$format_date(item.published)</span>
         </div>
     </div>
-    <!--div class="accordion-heading">
-            <a href="$item.url" target="_blank">Sources: $item.source_count</a>
-    </div-->
     <div id="collapse$item.id" class="accordion-body collapse">
         <div class="accordion-inner">
             $:item.description
             <div class="accordion-toggle-toolbar">
-                <a class="label $like_label_class" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(){});">$like_label_text</a>
-                <a class="label">Sources: $item.source_count</a>
+                <a class="label $like_label_class" data-likebutton="$item.id" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(data){toggleLikeButton('$item.id', data);});">$like_label_text</a>
+                <a class="label" data-toggle="source-popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-original-title="Sources" data-container="body">Sources: $item.source_count</a>
+                <a class="label" href="$item.url" target="_blank">Original</a>
             </div>
         </div>
     </div>
@@ -54,5 +52,6 @@ $code:
                 function(data){}
             );
         });
+        $$('[data-toggle="source-popover"]').popover();
     });
 </script>
