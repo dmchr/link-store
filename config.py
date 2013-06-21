@@ -14,6 +14,7 @@ else:
 cache = False
 
 items_per_page = 5
+unread_items_per_page = 10
 
 # Rabbit queues
 que_download_article = 'articles_for_downloads'

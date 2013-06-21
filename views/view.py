@@ -10,6 +10,7 @@ from models.article import ArticleFactory
 t_globals = dict(
     datestr=web.datestr,
     str=str,
+    sort=sorted,
     ctx=web.web_session
 )
 render = web.template.render('templates/', cache=config.cache, globals=t_globals)
@@ -51,7 +52,7 @@ class SourceAdd:
         title = data.addSourceTitle or ''
         s_type = data.addSourceType
         s = mSource()
-        s.add_to_user(user_id, s_type, url, title)
+        s.add_to_user(user_id, s_type, url, title, 'Stuff')
         raise web.seeother(SOURCE_LIST_URL)
 
 
@@ -105,7 +106,10 @@ class ArticleList:
         page = int(page)
         n = ArticleFactory()
         lst, count = n.list(mode, page, user_id)
-        return render.article.list(lst, page, count)
+        paginate = True
+        if mode == 'unread':
+            paginate = False
+        return render.article.list(lst, page, count, paginate)
 
     def GET(self, mode, page):
         user_id = check_user()

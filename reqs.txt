@@ -8,3 +8,5 @@ cssselect
 python-social-auth
 nose
 coverage
+opml
+
