@@ -16,9 +16,11 @@ sys.path.append(parentdir)
 import config
 from models.article import ArticleFactory
 
-queue = config.que_download_article
+queue = config.que_update_source
 DB = config.DB
 twitter_feed_url = config.twitter_feed_url
+
+HTTP_TIMEOUT = 2
 
 
 def get_domain(url):
@@ -29,11 +31,11 @@ def get_domain(url):
 
 
 def get_source(source_id):
-    return DB.select('sources', where="id=$source_id", vars={'source_id': source_id})[0]
+    return DB.select('sources', where="id=$source_id", vars={'source_id': source_id})
 
 
 def add_article_location(user_article_id, location_type, location):
-    location = DB.select(
+    res = DB.select(
         'articles_locations',
         where="user_article_id=$user_article_id AND location_type=$location_type AND location=$location",
         vars={
@@ -42,7 +44,7 @@ def add_article_location(user_article_id, location_type, location):
             'location': location
         }
     )
-    if not location:
+    if not res:
         location_id = DB.insert(
             'articles_locations',
             user_article_id=user_article_id,
@@ -62,7 +64,7 @@ def add_article_location(user_article_id, location_type, location):
 
 
 def add_article_to_users(source_id, article_id):
-    items = DB.select('user_sources', where="source_id=$source_id", vars={'source_id': source_id})
+    items = DB.select('user_sources', where="source_id=$source_id AND is_active=1", vars={'source_id': source_id})
     for item in items:
         user_article_id = DB.insert('user_articles', user_id=item.user_id, article_id=article_id)
         add_article_location(user_article_id, 'source', source_id)
@@ -106,10 +108,21 @@ def save_urls(parent_article_id, source_id, urls):
 
 
 def update_feed(source):
-    res = feedparser.parse(source['url'])
+    opener = urllib2.build_opener()
+    opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+    try:
+        response = opener.open(source['url'], None, HTTP_TIMEOUT)
+    except urllib2.URLError as exc:
+        print exc
+        return False
+
+    res = feedparser.parse(response)
     for item in res['entries']:
         link = item.link
-        title = item.title
+        if 'title' in item.keys():
+            title = item.title
+        else:
+            title = 'No title'
         existed_link = DB.select("articles", where="url=$url", vars={'url': link})
         if not existed_link:
             article_id = insert_article(source.id, item)
@@ -167,7 +180,10 @@ def update_twitter(source):
 
 
 def update_source(source_id):
-    source = get_source(source_id)
+    res = get_source(source_id)
+    if not res:
+        return False
+    source = res[0]
     if source.type == 'feed':
         update_feed(source)
     elif source.type == 'twitter':
