@@ -1,47 +1,49 @@
-$def with (items, page, page_total)
+$def with (items, page, page_total, pagination=True)
 
 <div class="accordion" id="accordion2">
 $for item in items:
     $:render.article.list_item(item)
 </div>
 
-
-<div class="pagination">
-    <ul>
-        $code:
-            prev_page = page - 1
-            next_page = page + 1
-        $if prev_page:
-            <li><a href="$prev_page">Prev</a></li>
-        $code:
-            pages = []
-            if page_total < 7:
-                for i in xrange(1, page_total+1):
-                    cls = ''
-                    if i == page:
-                        cls = ' class="active"'
-                    pages.append('<li{1}><a href="{0}">{0}</a></li>'.format(i, cls))
-            else:
-                first_dot = False
-                last_dot = False
-                for i in xrange(1, page_total+1):
-                    cls = ''
-                    if i == page:
-                        cls = ' class="active"'
-                    if i == 1 or i in xrange(page-2, page+3) or i == page_total:
+$if pagination:
+    <div class="pagination">
+        <ul>
+            $code:
+                prev_page = page - 1
+                next_page = page + 1
+            $if prev_page:
+                <li><a href="$prev_page">Prev</a></li>
+            $code:
+                pages = []
+                if page_total < 7:
+                    for i in xrange(1, page_total+1):
+                        cls = ''
+                        if i == page:
+                            cls = ' class="active"'
                         pages.append('<li{1}><a href="{0}">{0}</a></li>'.format(i, cls))
-                    else:
-                        if not first_dot and i < page:
-                            first_dot = True
-                            pages.append('<li class="disabled"><a>...</a></li>')
-                        if not last_dot and i > page:
-                            last_dot = True
-                            pages.append('<li class="disabled"><a>...</a></li>')
+                else:
+                    first_dot = False
+                    last_dot = False
+                    for i in xrange(1, page_total+1):
+                        cls = ''
+                        if i == page:
+                            cls = ' class="active"'
+                        if i == 1 or i in xrange(page-2, page+3) or i == page_total:
+                            pages.append('<li{1}><a href="{0}">{0}</a></li>'.format(i, cls))
+                        else:
+                            if not first_dot and i < page:
+                                first_dot = True
+                                pages.append('<li class="disabled"><a>...</a></li>')
+                            if not last_dot and i > page:
+                                last_dot = True
+                                pages.append('<li class="disabled"><a>...</a></li>')
 
 
-        $for p in pages:
-            $:p
-        $if next_page and page < page_total:
-            <li><a href="$next_page">Next</a></li>
-    </ul>
-</div>
+            $for p in pages:
+                $:p
+            $if next_page and page < page_total:
+                <li><a href="$next_page">Next</a></li>
+        </ul>
+    </div>
+$else:
+    <a class="btn btn-large" type="button" href="/article/list/unread/1">Get more articles</a>
