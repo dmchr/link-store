@@ -1,5 +1,6 @@
 import config
 import math
+import web
 from mq import create_job
 
 DB = config.DB
@@ -163,6 +164,7 @@ class ArticleFactory:
             )
             #count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'unread':
+            offset = config.unread_items_per_page * (page - 1)
             sql = """
                 SELECT n.*, l.is_liked, ua.source_count FROM articles n
                 JOIN user_articles ua ON n.id=ua.article_id
@@ -182,7 +184,7 @@ class ArticleFactory:
                 sql,
                 vars={
                     'user_id': user_id,
-                    'limit': self.items_per_page,
+                    'limit': config.unread_items_per_page,
                     'offset': offset}
             )
             count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
@@ -245,6 +247,23 @@ class ArticleFactory:
         if read_news:
             return False
         inserted_id = DB.insert('user_reads', user_id=user_id, article_id=article_id)
+        sql = """
+            SELECT al.location source_id FROM articles_locations al
+            JOIN user_articles ua ON al.user_article_id=ua.id AND user_id=$user_id
+            WHERE ua.article_id = $article_id AND al.location_type='source'
+        """
+        res = DB.query(sql, vars={'article_id': article_id, 'user_id': int(user_id)})
+        if res:
+            source_id = res[0]['source_id']
+            DB.update(
+                'user_sources',
+                where="source_id=$source_id AND user_id=$user_id",
+                vars={
+                    'user_id': int(user_id),
+                    'source_id': int(source_id)
+                },
+                read_count=web.db.SQLLiteral('read_count+1')
+            )
         return inserted_id
 
     def like(self, article_id, user_id, is_liked=1):
