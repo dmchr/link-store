@@ -83,7 +83,7 @@ class ServiceLoadNews:
     def GET(self):
         s = mSource()
         s.load_news()
-        raise web.seeother('/')
+        raise web.seeother('/article/list/unread/1')
 
 
 class ArticleRead:
@@ -159,7 +159,7 @@ class Login():
     def GET(self):
         web.web_session.user_id = 1
         web.web_session.username = 'Test User'
-        raise web.seeother('/article/list/all/1')
+        raise web.seeother('/article/list/unread/1')
 
 
 class Logout():

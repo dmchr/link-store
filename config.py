@@ -9,11 +9,11 @@ def is_test():
 if is_test():
     DB = web.database(dbn='mysql', db='news_test', user='sot', pw='sot')
 else:
-    DB = web.database(dbn='mysql', db='news', user='sot', pw='sot')
+    DB = web.database(dbn='mysql', db='linkstore', user='sot', pw='sot')
 
 cache = False
 
-items_per_page = 5
+items_per_page = 10
 unread_items_per_page = 10
 
 # Rabbit queues
