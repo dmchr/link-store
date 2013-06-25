@@ -119,6 +119,17 @@ class mSource:
             read_count=web.db.SQLLiteral('read_count+1')
         )
 
+    def increase_like_count(self, source_id, user_id):
+        return DB.update(
+            'user_sources',
+            where="source_id=$source_id AND user_id=$user_id",
+            vars={
+                'user_id': user_id,
+                'source_id': source_id
+            },
+            like_count=web.db.SQLLiteral('like_count+1')
+        )
+
     def load_news(self):
         rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL")
         for source in rows:

@@ -173,6 +173,9 @@ class UserArticle:
                 is_liked=self.is_liked,
                 like_time=web.db.SQLLiteral('NOW()')
             )
+            source_id = self.get_source_id()
+            if source_id:
+                mSource().increase_like_count(source_id, self.user_id)
         else:
             return False
         return True
