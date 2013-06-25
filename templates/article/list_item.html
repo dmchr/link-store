@@ -13,18 +13,20 @@ $code:
 
 <div class="accordion-group">
     <div class="accordion-heading">
-        <!--div class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id"-->
         <div class="accordion-toggle">
             $code:
                 like_label_class = ''
                 like_label_url = '/a/like'
                 like_label_text = 'Like'
+                unread_link_class = 'article-head-unread'
                 if item.is_liked:
                     like_label_class = 'label-success'
                     like_label_url = '/a/dislike'
                     like_label_text = 'Liked'
+                if item.is_read:
+                    unread_link_class = ''
             <a class="label $like_label_class" data-likebutton="$item.id" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(data){toggleLikeButton('$item.id', data);});">$like_label_text</a>
-            <a data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
+            <a class="$unread_link_class" data-articlehead="$item.id" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
                 $format_title(item.title)
             </a>
             <span class="pull-right">$format_date(item.published)</span>
@@ -44,14 +46,6 @@ $code:
 
 <script>
     $$(document).ready(function() {
-        $$('#collapse$item.id').on('shown', function () {
-            $$('html, body').scrollTop($$('#collapse$item.id').offset().top - 80);
-            $$.post(
-                "/a/read",
-                {article_id: $item.id},
-                function(data){}
-            );
-        });
-        $$('[data-toggle="source-popover"]').popover();
+        readArticle($item.id);
     });
 </script>

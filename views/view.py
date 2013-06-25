@@ -4,7 +4,7 @@ import web
 
 import config
 from models.source import mSource
-from models.article import ArticleFactory
+from models.article import ArticleFactory, UserArticle
 
 
 t_globals = dict(
@@ -93,9 +93,8 @@ class ArticleRead:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = ArticleFactory()
-        n.read(article_id, user_id)
-        return json.dumps({'success': True})
+        ua = UserArticle(user_id=user_id, article_id=article_id)
+        return json.dumps({'success': ua.read()})
 
     def GET(self):
         return json.dumps({'success': True})
@@ -124,9 +123,8 @@ class ArticleLike:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = ArticleFactory()
-        n.like(article_id, user_id)
-        return json.dumps({'success': True})
+        ua = UserArticle(user_id=user_id, article_id=article_id)
+        return json.dumps({'success': ua.like()})
 
 
 class ArticleDislike:
@@ -136,9 +134,8 @@ class ArticleDislike:
         article_id = data.article_id
         if not article_id:
             json.dumps({'success': False})
-        n = ArticleFactory()
-        n.dislike(article_id, user_id)
-        return json.dumps({'success': True})
+        ua = UserArticle(user_id=user_id, article_id=article_id)
+        return json.dumps({'success': ua.dislike()})
 
 
 class ArticleAdd():

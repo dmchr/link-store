@@ -1,7 +1,9 @@
 import config
 import math
+import time
 import web
 from mq import create_job
+from source import mSource
 
 DB = config.DB
 
@@ -15,14 +17,19 @@ class Article:
     url = None
     title = None
     description = None
+    published = None
 
-    def __init__(self, article_id=None, url=None, title=None, description=None):
+    def __init__(self, article_id=None, url=None, title=None, description=None, published=None):
         if article_id and url:
             self.id = article_id
 
         self.url = url
         self.title = title
         self.description = description
+        if published:
+            self.published = published
+        else:
+            self.published = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
         if article_id and not url:
             res = DB.select('articles', where="id=$article_id", vars={'article_id': article_id})
@@ -43,11 +50,18 @@ class Article:
                 vars={'id': self.id},
                 url=self.url,
                 title=self.title,
-                description=self.description
+                description=self.description,
+                published=self.published
             )
         else:
-            self.id = DB.insert('articles', url=self.url, title=self.title, description=self.description)
-        return True
+            self.id = DB.insert(
+                'articles',
+                url=self.url,
+                title=self.title,
+                description=self.description,
+                published=self.published
+            )
+        return self.id
 
     def get_urls_from_description(self):
         return []
@@ -58,6 +72,8 @@ class UserArticle:
     user_id = None
     article_id = None
     source_count = None
+    is_read = None
+    is_liked = None
 
     def __init__(self, user_article_id=None, user_id=None, article_id=None):
         if user_article_id:
@@ -86,6 +102,8 @@ class UserArticle:
         self.user_id = row.user_id
         self.article_id = row.article_id
         self.source_count = row.source_count
+        self.is_read = row.is_read
+        self.is_liked = row.is_liked
 
     def _load_attrs(self):
         res = DB.select('user_articles', where="id=$user_article_id", vars={'user_article_id': self.id})
@@ -106,6 +124,61 @@ class UserArticle:
             location_type=location_type,
             location=location
         )
+
+    def inc_source_count(self):
+        return DB.update(
+            'user_articles',
+            where="id=$user_article_id",
+            vars={
+                'user_article_id': self.id
+            },
+            source_count=web.db.SQLLiteral('source_count+1')
+        )
+
+    def get_source_id(self):
+        sql = """
+                SELECT al.location source_id FROM articles_locations al
+                JOIN user_articles ua ON al.user_article_id=ua.id AND user_id=$user_id
+                WHERE ua.article_id = $article_id AND al.location_type='source'
+            """
+        res = DB.query(sql, vars={'article_id': self.article_id, 'user_id': self.user_id})
+        if res:
+            return res[0]['source_id']
+        return False
+
+    def read(self):
+        if self.id and not self.is_read:
+            self.is_read = 1
+            DB.update(
+                'user_articles',
+                where="id=$id",
+                vars={'id': self.id},
+                is_read=self.is_read,
+                read_time=web.db.SQLLiteral('NOW()')
+            )
+            source_id = self.get_source_id()
+            if source_id:
+                mSource().increase_read_count(source_id, self.user_id)
+        else:
+            return False
+        return True
+
+    def like(self, is_liked=1):
+        if self.id:
+            self.is_liked = is_liked
+            DB.update(
+                'user_articles',
+                where="id=$id",
+                vars={'id': self.id},
+                is_liked=self.is_liked,
+                like_time=web.db.SQLLiteral('NOW()')
+            )
+        else:
+            return False
+        return True
+
+    def dislike(self):
+        return self.like(is_liked=0)
 
 
 class ArticleFactory:
@@ -143,17 +216,16 @@ class ArticleFactory:
         count = 0
         if mode == 'all':
             sql = """
-                SELECT n.*, l.is_liked, ua.source_count FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                LEFT JOIN user_likes l ON n.id=l.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
-                ORDER BY n.id DESC
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+                ORDER BY a.id DESC
                 LIMIT $limit OFFSET $offset
             """
             sql_count = """
-                SELECT count(n.id) cnt FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
             """
             items = DB.query(
                 sql,
@@ -166,19 +238,16 @@ class ArticleFactory:
         if mode == 'unread':
             offset = config.unread_items_per_page * (page - 1)
             sql = """
-                SELECT n.*, l.is_liked, ua.source_count FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                LEFT JOIN user_reads r ON n.id=r.article_id
-                LEFT JOIN user_likes l ON n.id=l.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL AND r.id IS NULL
-                ORDER BY n.published DESC
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+                ORDER BY a.published DESC
                 LIMIT $limit OFFSET $offset
             """
             sql_count = """
-                SELECT count(n.id) cnt FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                LEFT JOIN user_reads r ON n.id=r.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL AND r.id IS NULL
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
             """
             items = DB.query(
                 sql,
@@ -190,19 +259,16 @@ class ArticleFactory:
             count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'read':
             sql = """
-                SELECT n.*, l.is_liked, ua.source_count FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                JOIN user_reads r ON n.id=r.article_id
-                LEFT JOIN user_likes l ON n.id=l.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
-                ORDER BY r.created DESC
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+                ORDER BY ua.read_time DESC
                 LIMIT $limit OFFSET $offset
             """
             sql_count = """
-                SELECT count(n.id) cnt FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                JOIN user_reads r ON n.id=r.article_id
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
             """
             items = DB.query(
                 sql,
@@ -214,18 +280,16 @@ class ArticleFactory:
             count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         if mode == 'liked':
             sql = """
-                SELECT n.*, l.is_liked, ua.source_count FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                JOIN user_likes l ON n.id=l.article_id AND l.is_liked=1
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
-                ORDER BY l.created DESC
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
+                ORDER BY ua.like_time DESC
                 LIMIT $limit OFFSET $offset
             """
             sql_count = """
-                SELECT count(n.id) cnt FROM articles n
-                JOIN user_articles ua ON n.id=ua.article_id
-                JOIN user_likes l ON n.id=l.article_id AND l.is_liked=1
-                WHERE ua.user_id=$user_id AND n.title IS NOT NULL
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
             """
             items = DB.query(
                 sql,
@@ -236,61 +300,6 @@ class ArticleFactory:
             )
             count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
         return items, int(math.ceil(count / float(self.items_per_page)))
-
-    def read(self, article_id, user_id):
-        read_news = DB.select('user_reads',
-                              where="user_id=$user_id AND article_id=$article_id",
-                              vars={
-                                  'user_id': int(user_id),
-                                  'article_id': int(article_id)
-                              })
-        if read_news:
-            return False
-        inserted_id = DB.insert('user_reads', user_id=user_id, article_id=article_id)
-        sql = """
-            SELECT al.location source_id FROM articles_locations al
-            JOIN user_articles ua ON al.user_article_id=ua.id AND user_id=$user_id
-            WHERE ua.article_id = $article_id AND al.location_type='source'
-        """
-        res = DB.query(sql, vars={'article_id': article_id, 'user_id': int(user_id)})
-        if res:
-            source_id = res[0]['source_id']
-            DB.update(
-                'user_sources',
-                where="source_id=$source_id AND user_id=$user_id",
-                vars={
-                    'user_id': int(user_id),
-                    'source_id': int(source_id)
-                },
-                read_count=web.db.SQLLiteral('read_count+1')
-            )
-        return inserted_id
-
-    def like(self, article_id, user_id, is_liked=1):
-        liked_news = DB.select('user_likes',
-                               where="user_id=$user_id AND article_id=$article_id",
-                               vars={
-                                   'user_id': int(user_id),
-                                   'article_id': int(article_id)
-                               })
-        if not liked_news:
-            inserted_id = DB.insert('user_likes', user_id=user_id, article_id=article_id, is_liked=is_liked)
-        else:
-            like_mark = liked_news[0]['is_liked']
-            if like_mark != is_liked:
-                DB.update(
-                    'user_likes',
-                    where="user_id=$user_id AND article_id=$article_id",
-                    vars={
-                        'user_id': int(user_id),
-                        'article_id': int(article_id)
-                    },
-                    is_liked=is_liked
-                )
-        return True
-
-    def dislike(self, article_id, user_id):
-        return self.like(article_id, user_id, 0)
 
     def add(self, url, user_id=None, location_type=None, location=None):
         art = self._get_obj_by_url(url, user_id)
