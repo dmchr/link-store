@@ -7,14 +7,13 @@ import re
 import sys
 import time
 import urllib2
-import web
 from urlparse import urlparse
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parentdir)
 
 import config
-from models.article import ArticleFactory
+from models.article import Article, ArticleFactory, UserArticle
 
 queue = config.que_update_source
 DB = config.DB
@@ -45,20 +44,9 @@ def add_article_location(user_article_id, location_type, location):
         }
     )
     if not res:
-        location_id = DB.insert(
-            'articles_locations',
-            user_article_id=user_article_id,
-            location_type=location_type,
-            location=location
-        )
-        DB.update(
-            'user_articles',
-            where="id=$user_article_id",
-            vars={
-                'user_article_id': user_article_id
-            },
-            source_count=web.db.SQLLiteral('source_count+1')
-        )
+        article = UserArticle(user_article_id)
+        location_id = article.add_location(location_type, location)
+        article.inc_source_count()
         return location_id
     return False
 
@@ -72,15 +60,21 @@ def add_article_to_users(source_id, article_id):
 
 
 def insert_article(source_id, item, content=None):
-    title = item.get('title', 'No title')
-    link = item.link
+    def format_publish_time(item):
+        tm = item.get('published_parsed') or item.get('updated_parsed') or time.localtime()
+        return time.strftime('%Y-%m-%d %H:%M:%S', tm)
+
+    article = Article()
+    article.title = item.get('title', 'No title')
+    article.url = item.link
     if not content:
         content = item.get('description', 'No description')
-    tm = item.get('published_parsed') or item.get('updated_parsed') or time.localtime()
-    published = time.strftime('%Y-%m-%d %H:%M:%S', tm)
-    article_id = DB.insert('articles', url=link, title=title, description=content, published=published)
-    add_article_to_users(source_id, article_id)
-    return article_id
+    article.description = content
+    article.published = format_publish_time(item)
+    article.save()
+
+    add_article_to_users(source_id, article.id)
+    return article.id
 
 
 def save_urls(parent_article_id, source_id, urls):
@@ -108,16 +102,17 @@ def save_urls(parent_article_id, source_id, urls):
 
 
 def update_feed(source):
-    opener = urllib2.build_opener()
-    opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
-    try:
-        response = opener.open(source['url'], None, HTTP_TIMEOUT)
-    except urllib2.URLError as exc:
-        print exc
-        return False
+    def get_http_response(url):
+        opener = urllib2.build_opener()
+        opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+        try:
+            response = opener.open(url, None, HTTP_TIMEOUT)
+        except urllib2.URLError as exc:
+            print exc
+            return False
+        return response
 
-    res = feedparser.parse(response)
-    for item in res['entries']:
+    def handle_feed_item(item, source):
         link = item.link
         if 'title' in item.keys():
             title = item.title
@@ -127,6 +122,14 @@ def update_feed(source):
         if not existed_link:
             article_id = insert_article(source.id, item)
             print '      ', article_id, title
+
+    response = get_http_response(source['url'])
+    if not response:
+        return False
+
+    res = feedparser.parse(response)
+    for item in res['entries']:
+        handle_feed_item(item, source)
     return True
 
 
@@ -165,7 +168,8 @@ def update_twitter(source):
     for item in res['entries']:
         link = item.link
         content = item.title
-        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', content)
+        url_pattern = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+        urls = re.findall(url_pattern, content)
         if urls:
             content, urls_for_save = handle_urls(content, urls)
         existed_article = DB.select("articles", where="url=$url", vars={'url': link})
