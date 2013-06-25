@@ -185,7 +185,6 @@ class UserArticle:
 
 
 class ArticleFactory:
-    items_per_page = config.items_per_page
 
     def _get_by_id(self, article_id):
         return DB.select('articles', where="id=$article_id", vars={'article_id': article_id})[0]
@@ -213,96 +212,29 @@ class ArticleFactory:
         return False
 
     def list(self, mode, page, user_id):
-        page = int(page)
-        offset = self.items_per_page * (page - 1)
-        items = []
-        count = 0
+        items_per_page = config.items_per_page
+
         if mode == 'all':
-            sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-                ORDER BY a.id DESC
-                LIMIT $limit OFFSET $offset
-            """
-            sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-            """
-            items = DB.query(
-                sql,
-                vars={
-                    'user_id': user_id,
-                    'limit': self.items_per_page,
-                    'offset': offset}
-            )
-            #count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
-        if mode == 'unread':
-            offset = config.unread_items_per_page * (page - 1)
-            sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
-                ORDER BY a.published DESC
-                LIMIT $limit OFFSET $offset
-            """
-            sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
-            """
-            items = DB.query(
-                sql,
-                vars={
-                    'user_id': user_id,
-                    'limit': config.unread_items_per_page,
-                    'offset': offset}
-            )
-            count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
-        if mode == 'read':
-            sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
-                ORDER BY ua.read_time DESC
-                LIMIT $limit OFFSET $offset
-            """
-            sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
-            """
-            items = DB.query(
-                sql,
-                vars={
-                    'user_id': user_id,
-                    'limit': self.items_per_page,
-                    'offset': offset}
-            )
-            count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
-        if mode == 'liked':
-            sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
-                ORDER BY ua.like_time DESC
-                LIMIT $limit OFFSET $offset
-            """
-            sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
-            """
-            items = DB.query(
-                sql,
-                vars={
-                    'user_id': user_id,
-                    'limit': self.items_per_page,
-                    'offset': offset}
-            )
-            count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
-        return items, int(math.ceil(count / float(self.items_per_page)))
+            sql, sql_count = self.get_all_sql()
+        elif mode == 'unread':
+            items_per_page = config.unread_items_per_page
+            sql, sql_count = self.get_unread_sql()
+        elif mode == 'read':
+            sql, sql_count = self.get_read_sql()
+        elif mode == 'liked':
+            sql, sql_count = self.get_liked_sql()
+
+        page = int(page)
+        offset = items_per_page * (page - 1)
+        items = DB.query(
+            sql,
+            vars={
+                'user_id': user_id,
+                'limit': items_per_page,
+                'offset': offset}
+        )
+        count = DB.query(sql_count, vars={'user_id': user_id})[0]['cnt']
+        return items, int(math.ceil(count / float(items_per_page)))
 
     def add(self, url, user_id=None, location_type=None, location=None):
         art = self._get_obj_by_url(url, user_id)
@@ -322,3 +254,63 @@ class ArticleFactory:
         if location_type and location:
             ua.add_location(location_type, location)
         return True
+
+    def get_all_sql(self):
+        sql = """
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+            ORDER BY a.id DESC
+            LIMIT $limit OFFSET $offset
+        """
+        sql_count = """
+            SELECT count(a.id) cnt FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+        """
+        return sql, sql_count
+
+    def get_unread_sql(self):
+        sql = """
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+            ORDER BY a.published DESC
+            LIMIT $limit OFFSET $offset
+        """
+        sql_count = """
+            SELECT count(a.id) cnt FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+        """
+        return sql, sql_count
+
+    def get_read_sql(self):
+        sql = """
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+            ORDER BY ua.read_time DESC
+            LIMIT $limit OFFSET $offset
+        """
+        sql_count = """
+            SELECT count(a.id) cnt FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+        """
+        return sql, sql_count
+
+    def get_liked_sql(self):
+        sql = """
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
+                ORDER BY ua.like_time DESC
+                LIMIT $limit OFFSET $offset
+            """
+        sql_count = """
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
+            """
+        return sql, sql_count
