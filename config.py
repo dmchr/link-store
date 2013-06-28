@@ -13,8 +13,8 @@ else:
 
 cache = False
 
-items_per_page = 10
-unread_items_per_page = 10
+items_per_page = 20
+unread_items_per_page = 20
 
 # Rabbit queues
 que_download_article = 'articles_for_downloads'

@@ -22,3 +22,12 @@ html, body {
 .article-head-unread{
     font-weight: bold
 }
+
+.accordion-group{
+    margin-bottom: 1px !important;
+}
+
+.accordion-toggle{
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+}
