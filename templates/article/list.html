@@ -1,7 +1,18 @@
 $def with (items, page, page_total, pagination=True)
 
 <div class="accordion" id="accordion2">
-$for item in items:
+    <script>
+        $code:
+            ids = []
+            items2 = []
+            for item in items:
+                ids.append(str(item.id))
+                items2.append(item)
+
+        article_ids=$:ids
+    </script>
+
+$for item in items2:
     $:render.article.list_item(item)
 </div>
 
