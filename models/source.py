@@ -131,8 +131,7 @@ class mSource:
         )
 
     def load_news(self):
-        rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL")
+        rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL", limit=5)
         for source in rows:
             print source.title
             create_job('sources_for_update', str(source.id))
-            return True
