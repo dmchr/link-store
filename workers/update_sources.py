@@ -34,20 +34,19 @@ def get_source(source_id):
     return DB.select('sources', where="id=$source_id", vars={'source_id': source_id})
 
 
-def add_article_location(user_article_id, location_type, location):
+def add_article_location(user_article, location_type, location):
     res = DB.select(
         'articles_locations',
         where="user_article_id=$user_article_id AND location_type=$location_type AND location=$location",
         vars={
-            'user_article_id': user_article_id,
+            'user_article_id': user_article.id,
             'location_type': location_type,
             'location': location
         }
     )
     if not res:
-        article = UserArticle(user_article_id)
-        location_id = article.add_location(location_type, location)
-        article.inc_source_count()
+        location_id = user_article.add_location(location_type, location)
+        user_article.inc_source_count()
         return location_id
     return False
 
@@ -55,8 +54,8 @@ def add_article_location(user_article_id, location_type, location):
 def add_article_to_users(source_id, article_id):
     items = DB.select('user_sources', where="source_id=$source_id AND is_active=1", vars={'source_id': source_id})
     for item in items:
-        user_article_id = DB.insert('user_articles', user_id=item.user_id, article_id=article_id)
-        add_article_location(user_article_id, 'source', source_id)
+        article = UserArticle(user_id=item.user_id, article_id=article_id)
+        add_article_location(article, 'source', source_id)
     return True
 
 
@@ -87,19 +86,8 @@ def save_urls(parent_article_id, source_id, urls):
 
         items = DB.select('user_sources', where="source_id=$source_id", vars={'source_id': source_id})
         for item in items:
-            user_article = DB.select(
-                'user_articles',
-                where="user_id=$user_id AND article_id=$article_id",
-                vars={
-                    'user_id': item.user_id,
-                    'article_id': article_id
-                }
-            )
-            if not user_article:
-                user_article_id = DB.insert('user_articles', user_id=item.user_id, article_id=article_id)
-            else:
-                user_article_id = user_article[0].id
-            add_article_location(user_article_id, 'article', parent_article_id)
+            user_article = UserArticle(user_id=item.user_id, article_id=article_id)
+            add_article_location(user_article, 'article', parent_article_id)
 
 
 def update_feed(source):
