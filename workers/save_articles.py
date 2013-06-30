@@ -12,6 +12,7 @@ sys.path.append(parentdir)
 
 import config
 
+host = config.rabbit_host
 queue = config.que_download_article
 DB = config.DB
 
@@ -75,7 +76,7 @@ def callback(ch, method, properties, body):
 
 #t, b = download_article('http://www.rabbitmq.com/tutorials/tutorial-two-python.html')
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
 channel = connection.channel()
 channel.queue_declare(queue=queue, durable=True)
 print ' [*] Waiting for messages. To exit press CTRL+C'

@@ -7,14 +7,16 @@ def is_test():
         return os.environ['WEBPY_ENV'] == 'test'
 
 if is_test():
-    DB = web.database(dbn='mysql', db='news_test', user='sot', pw='sot')
+    DB = web.database(dbn='mysql', host='localhost', db='news_test', user='sot', pw='sot')
 else:
-    DB = web.database(dbn='mysql', db='linkstore', user='sot', pw='sot')
+    DB = web.database(dbn='mysql', host='localhost', db='linkstore', user='sot', pw='sot')
 
 cache = False
 
 items_per_page = 20
 unread_items_per_page = 20
+
+rabbit_host = 'localhost'
 
 # Rabbit queues
 que_download_article = 'articles_for_downloads'

@@ -15,6 +15,7 @@ sys.path.append(parentdir)
 import config
 from models.article import Article, ArticleFactory, UserArticle
 
+host = config.rabbit_host
 queue = config.que_update_source
 DB = config.DB
 twitter_feed_url = config.twitter_feed_url
@@ -209,7 +210,7 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
 channel = connection.channel()
 channel.queue_declare(queue=queue, durable=True)
 print ' [*] Waiting for messages. To exit press CTRL+C'
