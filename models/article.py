@@ -4,7 +4,7 @@ import math
 import time
 import web
 from mq import create_job
-from source import mSource
+from source import SourceFactory
 
 DB = config.DB
 
@@ -162,7 +162,7 @@ class UserArticle:
             )
             source_id = self.get_source_id()
             if source_id:
-                mSource().increase_read_count(source_id, self.user_id)
+                SourceFactory().increase_read_count(source_id, self.user_id)
         else:
             return False
         return True
@@ -179,7 +179,7 @@ class UserArticle:
             )
             source_id = self.get_source_id()
             if source_id:
-                mSource().increase_like_count(source_id, self.user_id)
+                SourceFactory().increase_like_count(source_id, self.user_id)
         else:
             return False
         return True

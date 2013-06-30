@@ -119,7 +119,7 @@ class UserSource:
         self.source = Source(self.source_id)
 
 
-class mSource:
+class SourceFactory:
     def list(self, user_id=0):
         def prepare_items(items):
             res = {}
@@ -145,50 +145,13 @@ class mSource:
         )
         return prepare_items(items)
 
-    def add(self, s_type, url, title):
-        res = DB.select('sources', where='url=$url', vars={'url': url})
-        if res:
-            return res[0]['id']
-        if s_type == 'feed':
-            res = feedparser.parse(url)
-            if res:
-                if not title:
-                    title = res.feed.title
-                res = DB.insert('sources', type=s_type, url=url, title=title)
-        elif s_type == 'twitter':
-            res = DB.insert('sources', type=s_type, url=url, title=url)
-        return res
-
-    def add_to_user(self, user_id, s_type, url, title, category=None):
-        source_id = self.add(s_type, url, title)
-        if source_id:
-            res = DB.select(
-                'user_sources',
-                where='user_id=$user_id AND source_id=$source_id',
-                vars={'user_id': user_id, 'source_id': source_id}
-            )
-            if not res:
-                DB.insert('user_sources', user_id=user_id, source_id=source_id)
-            if category:
-                self.update_category(source_id, user_id, category)
-
-        return True
-
-    def update_category(self, source_id, user_id, category):
-        res = DB.select(
-            'user_sources',
-            where='user_id=$user_id AND source_id=$source_id',
-            vars={'user_id': user_id, 'source_id': source_id}
-        )
-        if res:
-            item = res[0]
-            if item.category != category:
-                DB.update(
-                    'user_sources',
-                    where='id=$id',
-                    vars={'id': item.id},
-                    category=category
-                )
+    def add_to_user(self, user_id, s_type, url, title=None, category=None):
+        source = Source(type=s_type, url=url, title=title)
+        if source.id:
+            user_source = UserSource(user_id=user_id, source_id=source.id, category=category)
+        if user_source.id:
+            return user_source.id
+        return False
 
     def delete(self, sid):
         if sid and type(sid) == int:

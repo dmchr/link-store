@@ -3,7 +3,7 @@ import json
 import web
 
 import config
-from models.source import mSource
+from models.source import SourceFactory
 from models.article import ArticleFactory, UserArticle
 
 
@@ -35,7 +35,7 @@ class Index:
 class SourceList:
     def list(self):
         user_id = check_user()
-        s = mSource()
+        s = SourceFactory()
         l = s.list(user_id)
         return render.source.list(l)
 
@@ -53,14 +53,14 @@ class SourceAdd:
         url = data.addSourceUrl
         title = data.addSourceTitle or ''
         s_type = data.addSourceType
-        s = mSource()
-        s.add_to_user(user_id, s_type, url, title, config.default_source_category)
+        sf = SourceFactory()
+        sf.add_to_user(user_id, s_type, url, title, config.default_source_category)
         raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceDelete:
     def GET(self, source_id):
-        s = mSource()
+        s = SourceFactory()
         s.delete(int(source_id))
         raise web.seeother(SOURCE_LIST_URL)
 
@@ -68,7 +68,7 @@ class SourceDelete:
 class SourceDisable:
     def GET(self, source_id):
         user_id = check_user()
-        s = mSource()
+        s = SourceFactory()
         s.disable(int(source_id), user_id)
         raise web.seeother(SOURCE_LIST_URL)
 
@@ -76,14 +76,14 @@ class SourceDisable:
 class SourceEnable:
     def GET(self, source_id):
         user_id = check_user()
-        s = mSource()
+        s = SourceFactory()
         s.enable(int(source_id), user_id)
         raise web.seeother(SOURCE_LIST_URL)
 
 
 class ServiceLoadNews:
     def GET(self):
-        s = mSource()
+        s = SourceFactory()
         s.load_news()
         raise web.seeother(HOME_SCREEN)
 
