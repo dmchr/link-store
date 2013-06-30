@@ -32,9 +32,10 @@ class Index:
 
 
 class SourceList:
-    def list(self, **k):
+    def list(self):
+        user_id = check_user()
         s = mSource()
-        l = s.list(**k)
+        l = s.list(user_id)
         return render.source.list(l)
 
     def GET(self):
@@ -52,7 +53,7 @@ class SourceAdd:
         title = data.addSourceTitle or ''
         s_type = data.addSourceType
         s = mSource()
-        s.add_to_user(user_id, s_type, url, title, 'Stuff')
+        s.add_to_user(user_id, s_type, url, title, config.default_source_category)
         raise web.seeother(SOURCE_LIST_URL)
 
 
