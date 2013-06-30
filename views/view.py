@@ -17,6 +17,7 @@ render = web.template.render('templates/', cache=config.cache, globals=t_globals
 render._keywords['globals']['render'] = render
 
 SOURCE_LIST_URL = '/source/list'
+HOME_SCREEN = '/article/list/unread/1'
 
 
 def check_user():
@@ -84,7 +85,7 @@ class ServiceLoadNews:
     def GET(self):
         s = mSource()
         s.load_news()
-        raise web.seeother('/article/list/unread/1')
+        raise web.seeother(HOME_SCREEN)
 
 
 class ArticleRead:
@@ -157,7 +158,7 @@ class Login():
     def GET(self):
         web.web_session.user_id = 1
         web.web_session.username = 'Test User'
-        raise web.seeother('/article/list/unread/1')
+        raise web.seeother(HOME_SCREEN)
 
 
 class Logout():
