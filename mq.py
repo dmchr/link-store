@@ -1,8 +1,10 @@
 import pika
 
+import config
+
 
 def create_job(queue, message):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=config.rabbit_host))
     channel = connection.channel()
     channel.queue_declare(queue=queue, durable=True)
     channel.basic_publish(exchange='',
