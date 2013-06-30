@@ -16,16 +16,16 @@ $code:
         <div class="accordion-toggle">
             $code:
                 like_label_class = ''
-                like_label_url = '/a/like'
+                like_label_func = 'likeArticle'
                 like_label_text = 'Like'
                 unread_link_class = 'article-head-unread'
                 if item.is_liked:
                     like_label_class = 'label-success'
-                    like_label_url = '/a/dislike'
+                    like_label_func = 'dislikeArticle'
                     like_label_text = 'Liked'
                 if item.is_read:
                     unread_link_class = ''
-            <a class="label $like_label_class" data-likebutton="$item.id" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(data){toggleLikeButton('$item.id', data);});">$like_label_text</a>
+            <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$like_label_text</a>
             <a class="$unread_link_class" data-articlehead="$item.id" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
                 $format_title(item.title)
             </a>
@@ -36,7 +36,7 @@ $code:
         <div class="accordion-inner">
             $:item.description
             <div class="accordion-toggle-toolbar">
-                <a class="label $like_label_class" data-likebutton="$item.id" onclick="$$.post('$like_label_url', {article_id: $item.id}, function(data){toggleLikeButton('$item.id', data);});">$like_label_text</a>
+                <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$like_label_text</a>
                 <a class="label" data-toggle="source-popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-original-title="Sources" data-container="body">Sources: $item.source_count</a>
                 <a class="label" href="$item.url" target="_blank">Original</a>
             </div>

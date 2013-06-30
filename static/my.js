@@ -33,14 +33,34 @@ function readArticle(article_id) {
     $('[data-toggle="source-popover"]').popover();
 }
 
-function goToArticle(article_id){
+function likeArticle(article_id) {
+    $.post(
+        '/a/like',
+        {article_id: article_id},
+        function (data) {
+            toggleLikeButton(article_id, data);
+        }
+    );
+}
+
+function dislikeArticle(article_id) {
+    $.post(
+        '/a/dislike',
+        {article_id: article_id},
+        function (data) {
+            toggleLikeButton(article_id, data);
+        }
+    );
+}
+
+function goToArticle(article_id) {
     article_id = String(article_id);
     var article_idx = article_ids.indexOf(article_id);
 
-    if (!article_id || article_idx == -1){
+    if (!article_id || article_idx == -1) {
         return false;
     }
-    if (Nav.currentItem){
+    if (Nav.currentItem) {
         $('#collapse' + Nav.currentItem).collapse('hide');
     }
     $('#collapse' + article_id).collapse('show');
@@ -48,13 +68,13 @@ function goToArticle(article_id){
     Nav.currentItem = article_id;
 }
 
-function goToNext(){
-    if (!Nav.currentItem){
+function goToNext() {
+    if (!Nav.currentItem) {
         Nav.nextItem = article_ids[0];
     } else {
         var article_id = String(Nav.currentItem);
         var article_idx = article_ids.indexOf(article_id);
-        if (article_idx == article_ids.length - 1){
+        if (article_idx == article_ids.length - 1) {
             return false;
         } else {
             Nav.nextItem = article_ids[article_idx + 1]
@@ -63,13 +83,13 @@ function goToNext(){
     goToArticle(Nav.nextItem);
 }
 
-function goToPreviuos(){
-    if (!Nav.currentItem){
+function goToPreviuos() {
+    if (!Nav.currentItem) {
         Nav.previousItem = article_ids[article_ids.length - 1];
     } else {
         var article_id = String(Nav.currentItem);
         var article_idx = article_ids.indexOf(article_id);
-        if (article_idx == 0){
+        if (article_idx == 0) {
             return false;
         } else {
             Nav.previousItem = article_ids[article_idx - 1]
