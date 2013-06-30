@@ -1,3 +1,4 @@
+# coding: utf-8
 import config
 import math
 import time
@@ -20,7 +21,7 @@ class Article:
     published = None
 
     def __init__(self, article_id=None, url=None, title=None, description=None, published=None):
-        if article_id and url:
+        if article_id and url:  # Для создания нескольких объектов по одному sql запросу
             self.id = article_id
 
         self.url = url
@@ -74,6 +75,7 @@ class UserArticle:
     source_count = None
     is_read = None
     is_liked = None
+    weigth = None
 
     def __init__(self, user_article_id=None, user_id=None, article_id=None):
         if user_article_id:
@@ -88,6 +90,7 @@ class UserArticle:
             else:
                 self.id = DB.insert('user_articles', user_id=user_id, article_id=article_id)
                 self._load_attrs()
+                self.update_weigth()
         else:
             raise ArticleException("Can't create UserArticle without attributes")
 
@@ -104,6 +107,7 @@ class UserArticle:
         self.source_count = row.source_count
         self.is_read = row.is_read
         self.is_liked = row.is_liked
+        self.weigth = row.weigth
 
     def _load_attrs(self):
         res = DB.select('user_articles', where="id=$user_article_id", vars={'user_article_id': self.id})
@@ -183,9 +187,22 @@ class UserArticle:
     def dislike(self):
         return self.like(is_liked=0)
 
+    def update_weigth(self):
+        def calculate_weigth():
+            return 1
+
+        self.weigth = calculate_weigth()
+
+        DB.update(
+            'user_articles',
+            where="id=$id",
+            vars={'id': self.id},
+            weigth=self.weigth
+        )
+        return True
+
 
 class ArticleFactory:
-
     def _get_by_id(self, article_id):
         return DB.select('articles', where="id=$article_id", vars={'article_id': article_id})[0]
 
@@ -275,7 +292,7 @@ class ArticleFactory:
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
-            ORDER BY a.published DESC
+            ORDER BY ua.weigth desc, ua.id DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
