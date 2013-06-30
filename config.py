@@ -1,5 +1,8 @@
+import logging
 import os
 import web
+
+logging.basicConfig()
 
 
 def is_test():
