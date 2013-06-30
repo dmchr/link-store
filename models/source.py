@@ -201,11 +201,7 @@ class SourceFactory:
         )
 
     def load_news(self):
-        for i in (132, 133, 136):
-            create_job('sources_for_update', str(i))
-        return True
-
-        rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL", limit=20)
+        rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL", limit=500)
         for source in rows:
             print source.title
             create_job('sources_for_update', str(source.id))
