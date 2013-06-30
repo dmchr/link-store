@@ -44,6 +44,13 @@ class TestUserSource(unittest.TestCase):
         us = source.UserSource(user_id=user_id, source_id=s.id)
         self.assertIsInstance(us.id, long)
 
+    def test_init_create_user_source_with_category(self):
+        category = 'Test'
+        s = source.Source(type='feed', url=test_url2)
+        us = source.UserSource(user_id=user_id, source_id=s.id, category=category)
+        self.assertIsInstance(us.id, long)
+        self.assertEqual(us.category, category)
+
     def test_init_load_user_source(self):
         us = source.UserSource(self.us.id)
         self.assertEqual(us.id, self.us.id)

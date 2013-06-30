@@ -70,8 +70,9 @@ class UserSource:
     is_active = None
     read_count = None
     like_count = None
+    category = None
 
-    def __init__(self, user_source_id=None, user_id=None, source_id=None):
+    def __init__(self, user_source_id=None, user_id=None, source_id=None, category=None):
         if user_source_id:
             self.id = user_source_id
             self._load_attrs()
@@ -82,7 +83,10 @@ class UserSource:
             if res:
                 self._set_attrs(res[0])
             else:
-                self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id)
+                if category:
+                    self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id, category=category)
+                else:
+                    self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id)
                 self._load_attrs()
         else:
             raise SourceException("Can't create UserSource without attributes")
@@ -100,6 +104,7 @@ class UserSource:
         self.is_active = row.is_active
         self.read_count = row.read_count
         self.like_count = row.like_count
+        self.category = row.category
 
     def _load_attrs(self):
         res = DB.select('user_sources', where="id=$user_source_id", vars={'user_source_id': self.id})
