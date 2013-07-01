@@ -33,7 +33,7 @@ def get_domain(url):
 def get_source(source_id):
     return DB.select(
         'sources',
-        where="id=$source_id AND NOW() - INTERVAL 5 MINUTE > last_update",
+        where="id=$source_id AND (last_update < NOW() - INTERVAL 5 MINUTE OR last_update IS NULL)",
         vars={'source_id': source_id}
     )
 
