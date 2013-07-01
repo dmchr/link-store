@@ -31,7 +31,11 @@ def get_domain(url):
 
 
 def get_source(source_id):
-    return DB.select('sources', where="id=$source_id", vars={'source_id': source_id})
+    return DB.select(
+        'sources',
+        where="id=$source_id AND NOW() - INTERVAL 5 MIN > last_update",
+        vars={'source_id': source_id}
+    )
 
 
 def add_article_location(user_article, location_type, location):
@@ -175,6 +179,7 @@ def update_twitter(source):
 def update_source(source_id):
     res = get_source(source_id)
     if not res:
+        print 'Source %s doesn\'t exists or already updated' % source_id
         return False
     source = res[0]
     if source.type == 'feed':
