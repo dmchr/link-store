@@ -114,7 +114,7 @@ def update_feed(source):
         existed_link = DB.select("articles", where="url=$url", vars={'url': link})
         if not existed_link:
             article_id = insert_article(source.id, item)
-            print '      ', article_id
+            print '      ', article_id, title
 
     response = get_http_response(source['url'])
     if not response:
@@ -168,7 +168,7 @@ def update_twitter(source):
         existed_article = DB.select("articles", where="url=$url", vars={'url': link})
         if not existed_article:
             article_id = insert_article(source.id, item, content)
-            print '      ', article_id
+            print '      ', article_id, content
         else:
             article_id = existed_article[0].id
         if article_id == 835:
@@ -179,7 +179,6 @@ def update_twitter(source):
 def update_source(source_id):
     res = get_source(source_id)
     if not res:
-        print 'Source %s doesn\'t exists or already updated' % source_id
         return False
     source = res[0]
     if source.type == 'feed':
