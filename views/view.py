@@ -156,8 +156,13 @@ class ArticleAdd():
 
 class Login():
     def GET(self):
-        web.web_session.user_id = 1
-        web.web_session.username = 'Test User'
+        data = web.input()
+        if 'user_id' not in data.keys():
+            web.web_session.user_id = 2
+            web.web_session.username = 'Test User'
+        else:
+            web.web_session.user_id = 1
+            web.web_session.username = 'DMN'
         raise web.seeother(HOME_SCREEN)
 
 
