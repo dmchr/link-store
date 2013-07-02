@@ -5,6 +5,7 @@ import web
 import config
 from models.source import SourceFactory
 from models.article import ArticleFactory, UserArticle
+from models.user import login
 
 
 t_globals = dict(
@@ -157,12 +158,14 @@ class ArticleAdd():
 class Login():
     def GET(self):
         data = web.input()
-        if 'user_id' not in data.keys():
-            web.web_session.user_id = 2
-            web.web_session.username = 'Test User'
+        if 'u' in data.keys():
+            user = login(data.u)
+            if user:
+                web.web_session.user_id = user['id']
+                web.web_session.username = user['name']
         else:
             web.web_session.user_id = 1
-            web.web_session.username = 'DMN'
+            web.web_session.username = 'Test'
         raise web.seeother(HOME_SCREEN)
 
 
