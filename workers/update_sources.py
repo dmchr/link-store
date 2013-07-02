@@ -4,10 +4,14 @@ import feedparser
 import os
 import pika
 import re
+import socket
 import sys
 import time
 import urllib2
 from urlparse import urlparse
+
+timeout = 10
+socket.setdefaulttimeout(timeout)
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parentdir)
@@ -96,10 +100,9 @@ def save_urls(parent_article_id, source_id, urls):
 
 def update_feed(source):
     def get_http_response(url):
-        opener = urllib2.build_opener()
-        opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+        req = urllib2.Request(url)
         try:
-            response = opener.open(url, None, HTTP_TIMEOUT)
+            response = urllib2.urlopen(req)
         except urllib2.URLError as exc:
             print exc
             return False
