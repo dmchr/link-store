@@ -121,6 +121,9 @@ def update_feed(source):
         return False
 
     res = feedparser.parse(response)
+    if res.bozo:
+        return False
+
     for item in res['entries']:
         handle_feed_item(item, source)
     return True
