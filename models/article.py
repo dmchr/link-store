@@ -4,7 +4,7 @@ import math
 import time
 import web
 from mq import create_job
-from source import SourceFactory
+from source import SourceFactory, UserSource
 
 DB = config.DB
 
@@ -90,13 +90,15 @@ class UserArticle:
             else:
                 self.id = DB.insert('user_articles', user_id=user_id, article_id=article_id)
                 self._load_attrs()
-                self.update_weigth()
+                self._update_weigth()
         else:
             raise ArticleException("Can't create UserArticle without attributes")
 
     def __getattr__(self, name):
         if name == 'article':
             self._load_article()
+        if name == 'user_source':
+            self._load_source()
         return getattr(self, name)
 
     def _set_attrs(self, row):
@@ -121,6 +123,38 @@ class UserArticle:
             raise ArticleException("Add article_id before load")
         self.article = Article(self.article_id)
 
+    def _load_source(self):
+        source_id = self._get_source_id()
+        if source_id:
+            self.user_source = UserSource(user_id=self.user_id, source_id=source_id)
+        else:
+            self.user_source = None
+
+    def _get_source_id(self):
+        sql = """
+                SELECT al.location source_id FROM articles_locations al
+                JOIN user_articles ua ON al.user_article_id=ua.id AND user_id=$user_id
+                WHERE ua.article_id = $article_id AND al.location_type='source'
+            """
+        res = DB.query(sql, vars={'article_id': self.article_id, 'user_id': self.user_id})
+        if res:
+            return res[0]['source_id']
+        return False
+
+    def _calculate_weigth(self):
+        return 1
+
+    def _update_weigth(self):
+        self.weigth = self._calculate_weigth()
+
+        DB.update(
+            'user_articles',
+            where="id=$id",
+            vars={'id': self.id},
+            weigth=self.weigth
+        )
+        return True
+
     def add_location(self, location_type, location):
         return DB.insert(
             'articles_locations',
@@ -139,17 +173,6 @@ class UserArticle:
             source_count=web.db.SQLLiteral('source_count+1')
         )
 
-    def get_source_id(self):
-        sql = """
-                SELECT al.location source_id FROM articles_locations al
-                JOIN user_articles ua ON al.user_article_id=ua.id AND user_id=$user_id
-                WHERE ua.article_id = $article_id AND al.location_type='source'
-            """
-        res = DB.query(sql, vars={'article_id': self.article_id, 'user_id': self.user_id})
-        if res:
-            return res[0]['source_id']
-        return False
-
     def read(self):
         if self.id and not self.is_read:
             self.is_read = 1
@@ -160,7 +183,7 @@ class UserArticle:
                 is_read=self.is_read,
                 read_time=web.db.SQLLiteral('NOW()')
             )
-            source_id = self.get_source_id()
+            source_id = self._get_source_id()
             if source_id:
                 SourceFactory().increase_read_count(source_id, self.user_id)
         else:
@@ -177,7 +200,7 @@ class UserArticle:
                 is_liked=self.is_liked,
                 like_time=web.db.SQLLiteral('NOW()')
             )
-            source_id = self.get_source_id()
+            source_id = self._get_source_id()
             if source_id:
                 SourceFactory().increase_like_count(source_id, self.user_id)
         else:
@@ -186,20 +209,6 @@ class UserArticle:
 
     def dislike(self):
         return self.like(is_liked=0)
-
-    def update_weigth(self):
-        def calculate_weigth():
-            return 1
-
-        self.weigth = calculate_weigth()
-
-        DB.update(
-            'user_articles',
-            where="id=$id",
-            vars={'id': self.id},
-            weigth=self.weigth
-        )
-        return True
 
 
 class ArticleFactory:

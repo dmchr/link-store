@@ -114,7 +114,7 @@ def update_feed(source):
         existed_link = DB.select("articles", where="url=$url", vars={'url': link})
         if not existed_link:
             article_id = insert_article(source.id, item)
-            print '      ', article_id, title
+            print '      ', article_id
 
     response = get_http_response(source['url'])
     if not response:

@@ -78,12 +78,19 @@ class TestUserArticle(unittest.TestCase):
     def test_load_article(self):
         self.assertEqual(self.a.id, self.ua.article.id)
 
+    def test_load_source(self):
+        #self.s = source.Source(type='feed', url=test_url1)
+        #self.us = source.UserSource(user_id=user_id, source_id=self.s.id)
+        #self.ua.add_location('source', )
+        self.assertEqual(1, 1)
+
 
 class TestArticleFactory(unittest.TestCase):
     a = None
 
     def setUp(self):
         DB.delete('user_articles', where='1=1')
+        DB.delete('user_sources', where='1=1')
         DB.delete('users', where='1=1')
         self.a = article.Article()
         self.a.url = test_url1
