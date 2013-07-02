@@ -19,7 +19,7 @@ cache = False
 items_per_page = 20
 unread_items_per_page = 20
 
-rabbit_host = 'localhost'
+rabbit_host = '127.0.0.1'
 
 # Rabbit queues
 que_download_article = 'articles_for_downloads'
