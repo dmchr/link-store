@@ -24,8 +24,6 @@ queue = config.que_update_source
 DB = config.DB
 twitter_feed_url = config.twitter_feed_url
 
-HTTP_TIMEOUT = 2
-
 
 def get_domain(url):
     res = urlparse(url)
