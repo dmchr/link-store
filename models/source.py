@@ -145,8 +145,8 @@ class SourceFactory:
         )
         return prepare_items(items)
 
-    def add_to_user(self, user_id, s_type, url, title=None, category=None):
-        source = Source(type=s_type, url=url, title=title)
+    def add_to_user(self, user_id, source_type, url, title=None, category=None):
+        source = Source(type=source_type, url=url, title=title)
         if source.id:
             user_source = UserSource(user_id=user_id, source_id=source.id, category=category)
         if user_source.id:
