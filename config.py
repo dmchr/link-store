@@ -2,7 +2,14 @@ import logging
 import os
 import web
 
-logging.basicConfig()
+log_level = logging.DEBUG
+logger = logging.getLogger('main')
+logger.setLevel(log_level)
+ch = logging.StreamHandler()
+ch.setLevel(log_level)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
 def is_test():
