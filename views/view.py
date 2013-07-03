@@ -6,6 +6,7 @@ import config
 from models.source import SourceFactory
 from models.article import ArticleFactory, UserArticle
 from models.user import login
+from models.service import save_opml
 
 
 t_globals = dict(
@@ -87,6 +88,24 @@ class ServiceLoadNews:
         s = SourceFactory()
         s.load_news()
         raise web.seeother(HOME_SCREEN)
+
+
+class ServiceImportOpml:
+    def load_window(self):
+        return render.service.import_opml_form()
+
+    def GET(self):
+        return render.app(self.load_window())
+
+    def POST(self):
+        user_id = check_user()
+        data = web.input()
+        if 'opml' in data.keys():
+            opml = data.opml
+            save_opml(user_id, opml)
+            return render.app('OPML saved.')
+
+        return render.app(self.load_window())
 
 
 class ArticleRead:
