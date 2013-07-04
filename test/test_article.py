@@ -1,9 +1,10 @@
 import unittest
 from config import DB
-from models import article
+from models import article, source
 
 test_url1 = 'http://yandex.ru'
 test_url2 = 'http://google.com'
+test_rss = './rss/akry.xml'
 wrong_id = -1
 user_id = 1
 
@@ -48,6 +49,7 @@ class TestUserArticle(unittest.TestCase):
     ua = None
 
     def setUp(self):
+        DB.delete('user_sources', where='1=1')
         DB.delete('user_articles', where='1=1')
         DB.delete('users', where='1=1')
         self.a = article.Article()
@@ -79,10 +81,10 @@ class TestUserArticle(unittest.TestCase):
         self.assertEqual(self.a.id, self.ua.article.id)
 
     def test_load_source(self):
-        #self.s = source.Source(type='feed', url=test_url1)
-        #self.us = source.UserSource(user_id=user_id, source_id=self.s.id)
-        #self.ua.add_location('source', )
-        self.assertEqual(1, 1)
+        self.s = source.Source(type='feed', url=test_rss)
+        self.us = source.UserSource(user_id=user_id, source_id=self.s.id)
+        self.ua.add_location('source', self.s.id)
+        self.assertEqual(self.ua.user_source.source.id, self.s.id)
 
 
 class TestArticleFactory(unittest.TestCase):
