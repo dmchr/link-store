@@ -162,7 +162,7 @@ class UserArticle:
         :param   location_type: Тип источника
 
         :type    location: str
-        :param   location:
+        :param   location: Источник
 
         :rtype:  int or bool
         :return: articles_locations.id или False
@@ -280,13 +280,22 @@ class ArticleFactory:
             if not art.title:
                 create_job(config.que_download_article, str(article_id))
             if user_id and not art.user_id:
-                self.add_article_to_user(article_id, user_id, location_type, location)
+                self.link_article_to_user(article_id, user_id, location_type, location)
         else:
             article_id = DB.insert('articles', url=url)
             create_job(config.que_download_article, str(article_id))
         return article_id
 
-    def add_article_to_user(self, article_id, user_id, location_type=None, location=None):
+    def link_article_to_user(self, article_id, user_id, location_type=None, location=None):
+        """
+        Привязать статью к пользователю
+        :type  article_id: int
+        :type  user_id: int
+        :type location_type: str or None
+        :type location: str or None
+
+        :rtype: bool
+        """
         ua = UserArticle(user_id=user_id, article_id=article_id)
         if location_type and location:
             ua.add_location(location_type, location)

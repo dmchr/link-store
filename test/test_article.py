@@ -104,7 +104,7 @@ class TestArticleFactory(unittest.TestCase):
         DB.insert('users', id=user_id, name='Guest')
 
     def test_add_article_to_user(self):
-        res = article.ArticleFactory().add_article_to_user(self.a.id, user_id)
+        res = article.ArticleFactory().link_article_to_user(self.a.id, user_id)
         self.assertTrue(res)
 
     def test_add_article_with_url_only(self):
