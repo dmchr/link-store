@@ -89,6 +89,7 @@ class TestArticleFactory(unittest.TestCase):
     a = None
 
     def setUp(self):
+        DB.delete('user_opml', where='1=1')
         DB.delete('user_articles', where='1=1')
         DB.delete('user_sources', where='1=1')
         DB.delete('users', where='1=1')
