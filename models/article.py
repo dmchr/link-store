@@ -156,6 +156,17 @@ class UserArticle:
         return True
 
     def add_location(self, location_type, location):
+        """
+        Добавить Location для статьи пользователя
+        :type    location_type: str
+        :param   location_type: Тип источника
+
+        :type    location: str
+        :param   location:
+
+        :rtype:  int or bool
+        :return: articles_locations.id или False
+        """
         return DB.insert(
             'articles_locations',
             user_article_id=self.id,
