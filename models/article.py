@@ -75,7 +75,7 @@ class UserArticle:
     source_count = None
     is_read = None
     is_liked = None
-    weigth = None
+    rating = None
 
     def __init__(self, user_article_id=None, user_id=None, article_id=None):
         if user_article_id:
@@ -90,7 +90,7 @@ class UserArticle:
             else:
                 self.id = DB.insert('user_articles', user_id=user_id, article_id=article_id)
                 self._load_attrs()
-                self._update_weigth()
+                self._update_rating()
         else:
             raise ArticleException("Can't create UserArticle without attributes")
 
@@ -98,7 +98,7 @@ class UserArticle:
         if name == 'article':
             self._load_article()
         if name == 'user_source':
-            self._load_source()
+            return self._load_source()
         return getattr(self, name)
 
     def _set_attrs(self, row):
@@ -109,7 +109,7 @@ class UserArticle:
         self.source_count = row.source_count
         self.is_read = row.is_read
         self.is_liked = row.is_liked
-        self.weigth = row.weigth
+        self.rating = row.rating
 
     def _load_attrs(self):
         res = DB.select('user_articles', where="id=$user_article_id", vars={'user_article_id': self.id})
@@ -128,7 +128,8 @@ class UserArticle:
         if source_id:
             self.user_source = UserSource(user_id=self.user_id, source_id=source_id)
         else:
-            self.user_source = None
+            return None
+        return self.user_source
 
     def _get_source_id(self):
         sql = """
@@ -141,17 +142,24 @@ class UserArticle:
             return res[0]['source_id']
         return False
 
-    def _calculate_weigth(self):
-        return 1
+    def _calculate_rating(self):
+        if self.user_source is None:
+            return 1
+        read_count = self.user_source.read_count
+        like_count = self.user_source.like_count
+        if like_count == 0 or read_count == 0:
+            return 1
+        rating = int(round(like_count * 100 / read_count))
+        return rating
 
-    def _update_weigth(self):
-        self.weigth = self._calculate_weigth()
+    def _update_rating(self):
+        self.rating = self._calculate_rating()
 
         DB.update(
             'user_articles',
             where="id=$id",
             vars={'id': self.id},
-            weigth=self.weigth
+            rating=self.rating
         )
         return True
 
@@ -167,12 +175,15 @@ class UserArticle:
         :rtype:  int or bool
         :return: articles_locations.id или False
         """
-        return DB.insert(
+        res = DB.insert(
             'articles_locations',
             user_article_id=self.id,
             location_type=location_type,
             location=location
         )
+        if res and location_type == 'source':
+            self._update_rating()
+        return res
 
     def inc_source_count(self):
         return DB.update(
@@ -321,7 +332,7 @@ class ArticleFactory:
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
-            ORDER BY ua.weigth desc, ua.id DESC
+            ORDER BY ua.rating desc, ua.id DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """

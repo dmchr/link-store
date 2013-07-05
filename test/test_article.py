@@ -49,6 +49,7 @@ class TestUserArticle(unittest.TestCase):
     ua = None
 
     def setUp(self):
+        print 'TestUserArticle.setUp'
         DB.delete('user_sources', where='1=1')
         DB.delete('user_articles', where='1=1')
         DB.delete('users', where='1=1')
@@ -60,6 +61,10 @@ class TestUserArticle(unittest.TestCase):
 
         DB.insert('users', id=user_id, name='Guest')
         self.ua = article.UserArticle(user_id=user_id, article_id=self.a.id)
+
+        self.s = source.Source(type='feed', url=test_rss)
+        self.us = source.UserSource(user_id=user_id, source_id=self.s.id)
+        self.ua.add_location('source', self.s.id)
 
     def test_init_load_user_article_by_id(self):
         b = article.UserArticle(self.ua.id)
@@ -81,10 +86,31 @@ class TestUserArticle(unittest.TestCase):
         self.assertEqual(self.a.id, self.ua.article.id)
 
     def test_load_source(self):
-        self.s = source.Source(type='feed', url=test_rss)
-        self.us = source.UserSource(user_id=user_id, source_id=self.s.id)
-        self.ua.add_location('source', self.s.id)
         self.assertEqual(self.ua.user_source.source.id, self.s.id)
+
+    def test_set_init_rating(self):
+        print 'TestUserArticle.test_set_init_rating'
+        like_count = 3
+        read_count = 14
+        sf = source.SourceFactory()
+        for i in xrange(read_count):
+            sf.increase_read_count(self.s.id, user_id)
+        for i in xrange(like_count):
+            sf.increase_like_count(self.s.id, user_id)
+        us = source.UserSource(self.us.id)
+        self.assertEqual(us.like_count, like_count)
+        self.assertEqual(us.read_count, read_count)
+
+        a = article.Article()
+        a.url = test_url2
+        a.title = 'Test title 2'
+        a.description = 'Test description 2'
+        a.save()
+
+        ua = article.UserArticle(user_id=user_id, article_id=a.id)
+        ua.add_location('source', self.s.id)
+        expected_rating = int(round(like_count * 100 / read_count))
+        self.assertEqual(ua.rating, expected_rating)
 
 
 class TestArticleFactory(unittest.TestCase):

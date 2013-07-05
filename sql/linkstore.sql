@@ -65,7 +65,7 @@ CREATE TABLE `user_articles` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) unsigned NOT NULL,
   `article_id` int(11) unsigned NOT NULL,
-  `weigth` tinyint(2) unsigned DEFAULT '0',
+  `rating` tinyint(2) unsigned DEFAULT '0',
   `is_read` tinyint(3) NOT NULL DEFAULT '0',
   `read_time` timestamp NULL DEFAULT NULL,
   `is_liked` tinyint(3) NOT NULL DEFAULT '0',
@@ -75,7 +75,7 @@ CREATE TABLE `user_articles` (
   UNIQUE KEY `uniq-user_articles` (`user_id`,`article_id`) USING BTREE,
   KEY `idx-user_article-user_id` (`user_id`) USING BTREE,
   KEY `idx-user_article-article_id` (`article_id`) USING BTREE,
-  KEY `idx-user_articles-weigth` (`weigth`) USING BTREE,
+  KEY `idx-user_articles-rating` (`rating`) USING BTREE,
   CONSTRAINT `fk-users_articles-article_id` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk-users_articles-user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
