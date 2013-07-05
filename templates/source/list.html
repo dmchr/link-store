@@ -5,7 +5,6 @@ $def with (items)
     <div>
         <table class="table-condensed">
             <thead>
-                <td>#</td>
                 <td>Type</td>
                 <td>Title</td>
                 <td>Category</td>
@@ -18,7 +17,6 @@ $def with (items)
                 <tr><td colspan="8" style="background-color: #bebec5;">$category</td></tr>
                 $for item in items[category]
                     <tr>
-                        <td>$item.id</td>
                         <td><img src="/static/icons/$(item.type).png"></td>
                         <td>
                             <a href="#">$item.title</a>
