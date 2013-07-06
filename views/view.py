@@ -95,18 +95,18 @@ class SourceDelete:
 
 
 class SourceDisable:
-    def GET(self, source_id):
-        user_id = get_user()
-        s = SourceFactory()
-        s.disable(int(source_id), user_id)
+    def GET(self, user_source_id):
+        get_user()
+        s = UserSource(user_source_id)
+        s.disable()
         raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceEnable:
-    def GET(self, source_id):
-        user_id = get_user()
-        s = SourceFactory()
-        s.enable(int(source_id), user_id)
+    def GET(self, user_source_id):
+        get_user()
+        s = UserSource(user_source_id)
+        s.enable()
         raise web.seeother(SOURCE_LIST_URL)
 
 

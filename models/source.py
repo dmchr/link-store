@@ -163,6 +163,19 @@ class UserSource:
             category=self.category
         )
 
+    def enable(self, is_active=1):
+        self.is_active = is_active
+        DB.update(
+            'user_sources',
+            where="id=$id",
+            vars={'id': self.id},
+            is_active=self.is_active
+        )
+        return True
+
+    def disable(self):
+        return self.enable(is_active=0)
+
 
 class SourceFactory:
     def list(self, user_id=0):
@@ -215,26 +228,6 @@ class SourceFactory:
                 'user_id': user_id
             }
         )
-        return True
-
-    def disable(self, sid, user_id):
-        if sid and type(sid) == int:
-            DB.update(
-                'user_sources',
-                where="source_id=$source_id AND user_id=$user_id",
-                vars={'source_id': sid, 'user_id': user_id},
-                is_active=0
-            )
-        return True
-
-    def enable(self, sid, user_id):
-        if sid and type(sid) == int:
-            DB.update(
-                'user_sources',
-                where="source_id=$source_id AND user_id=$user_id",
-                vars={'source_id': sid, 'user_id': user_id},
-                is_active=1
-            )
         return True
 
     def increase_read_count(self, source_id, user_id):

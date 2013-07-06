@@ -55,6 +55,29 @@ class TestUserSource(unittest.TestCase):
         us = source.UserSource(self.us.id)
         self.assertEqual(us.id, self.us.id)
 
+    def test_enable_disable(self):
+        self.assertEqual(self.us.is_active, 1)
+
+        self.us.disable()
+        us = source.UserSource(self.us.id)
+        self.assertEqual(us.is_active, 0)
+
+        self.us.enable()
+        us = source.UserSource(self.us.id)
+        self.assertEqual(us.is_active, 1)
+
+    def test_set_category(self):
+        expected_category = 'New category'
+        self.us.set_category(expected_category)
+        us = source.UserSource(self.us.id)
+        self.assertEqual(us.category, expected_category)
+
+    def test_set_title(self):
+        expected_title = 'New title'
+        self.us.set_title(expected_title)
+        us = source.UserSource(self.us.id)
+        self.assertEqual(us.title, expected_title)
+
 
 class TestSourceFactory(unittest.TestCase):
     s = None
