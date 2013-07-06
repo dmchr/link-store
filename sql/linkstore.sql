@@ -51,7 +51,7 @@ DROP TABLE IF EXISTS `sources`;
 CREATE TABLE `sources` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `type` enum('feed','twitter') NOT NULL DEFAULT 'feed',
-  `title` varchar(512) NOT NULL,
+  `title` varchar(512) NOT NULL DEFAULT 'No title',
   `url` varchar(1024) NOT NULL,
   `last_update` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)

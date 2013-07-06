@@ -18,7 +18,7 @@ class Source:
     title = None
     last_update = None
 
-    def __init__(self, source_id=None, type=None, url=None, title=None):
+    def __init__(self, source_id=None, type=None, url=None):
         if source_id:
             self.id = source_id
             self._load_attrs()
@@ -27,7 +27,7 @@ class Source:
             if sources:
                 self._set_attrs(sources[0])
             else:
-                source_id = self._insert(type, url, title)
+                source_id = self._insert(type, url)
                 if source_id:
                     self.id = source_id
                     self._load_attrs()
@@ -51,12 +51,11 @@ class Source:
         else:
             raise SourceException("Can't load source with id=%s" % self.id)
 
-    def _insert(self, type, url, title):
+    def _insert(self, type, url):
         if type == 'feed':
             parse_result = feedparser.parse(url)
             if parse_result:
-                if not title:
-                    title = parse_result.feed.title
+                title = parse_result.feed.title
                 return DB.insert('sources', type=type, url=url, title=title)
         elif type == 'twitter':
             return DB.insert('sources', type=type, url=url, title=url)
@@ -67,12 +66,13 @@ class UserSource:
     id = None
     user_id = None
     source_id = None
+    title = None
     is_active = None
     read_count = None
     like_count = None
     category = None
 
-    def __init__(self, user_source_id=None, user_id=None, source_id=None, category=None):
+    def __init__(self, user_source_id=None, user_id=None, source_id=None, title=None, category=None):
         if user_source_id:
             self.id = user_source_id
             self._load_attrs()
@@ -83,8 +83,19 @@ class UserSource:
             if res:
                 self._set_attrs(res[0])
             else:
-                if category:
-                    self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id, category=category)
+                if category and title:
+                    self.id = DB.insert(
+                        'user_sources',
+                        user_id=user_id,
+                        source_id=source_id,
+                        title=title,
+                        category=category
+                    )
+                elif category or title:
+                    if category:
+                        self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id, category=category)
+                    else:
+                        self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id, title=title)
                 else:
                     self.id = DB.insert('user_sources', user_id=user_id, source_id=source_id)
                 self._load_attrs()
@@ -101,6 +112,7 @@ class UserSource:
             self.id = row.id
         self.user_id = row.user_id
         self.source_id = row.source_id
+        self.title = row.title
         self.is_active = row.is_active
         self.read_count = row.read_count
         self.like_count = row.like_count
@@ -118,6 +130,17 @@ class UserSource:
             raise SourceException("Add source_id before load")
         self.source = Source(self.source_id)
 
+    def set_title(self, title):
+        if not title:
+            return False
+        self.title = title
+        return DB.update(
+            'user_sources',
+            where="id=$id",
+            vars={'id': self.id},
+            title=self.title
+        )
+
 
 class SourceFactory:
     def list(self, user_id=0):
@@ -131,12 +154,12 @@ class SourceFactory:
             return res
 
         sql = """
-                SELECT s.*, us.is_active, us.read_count, us.like_count, us.category
-                FROM user_sources us #FORCE INDEX (`idx-users_sources-user_id`)
-                JOIN sources s ON us.source_id=s.id
-                WHERE us.user_id=$user_id
-                ORDER BY us.is_active DESC, us.like_count DESC, us.read_count DESC
-            """
+            SELECT s.*, us.title, us.is_active, us.read_count, us.like_count, us.category
+            FROM user_sources us #FORCE INDEX (`idx-users_sources-user_id`)
+            JOIN sources s ON us.source_id=s.id
+            WHERE us.user_id=$user_id
+            ORDER BY us.is_active DESC, us.like_count DESC, us.read_count DESC
+        """
         items = DB.query(
             sql,
             vars={
@@ -146,9 +169,9 @@ class SourceFactory:
         return prepare_items(items)
 
     def add_to_user(self, user_id, source_type, url, title=None, category=None):
-        source = Source(type=source_type, url=url, title=title)
+        source = Source(type=source_type, url=url)
         if source.id:
-            user_source = UserSource(user_id=user_id, source_id=source.id, category=category)
+            user_source = UserSource(user_id=user_id, source_id=source.id, title=title, category=category)
         if user_source.id:
             return user_source.id
         return False
