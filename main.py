@@ -4,6 +4,7 @@ urls = (
     '/', 'views.view.Index',
     '/source/list', 'views.view.SourceList',
     '/source/add', 'views.view.SourceAdd',
+    '/source/edit/(\d+)', 'views.view.SourceEdit',
     '/source/delete/(\d+)', 'views.view.SourceDelete',
     '/source/enable/(\d+)', 'views.view.SourceEnable',
     '/source/disable/(\d+)', 'views.view.SourceDisable',

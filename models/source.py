@@ -1,3 +1,4 @@
+# coding: utf-8
 import config
 import feedparser
 import web
@@ -131,6 +132,11 @@ class UserSource:
         self.source = Source(self.source_id)
 
     def set_title(self, title):
+        """
+        Изменить название фида пользователя
+        :type title: str
+        :rtype: int
+        """
         if not title:
             return False
         self.title = title
@@ -139,6 +145,22 @@ class UserSource:
             where="id=$id",
             vars={'id': self.id},
             title=self.title
+        )
+
+    def set_category(self, category):
+        """
+        Изменить категорию фида пользователя
+        :type category: str
+        :rtype: int
+        """
+        if not category:
+            return False
+        self.category = category
+        return DB.update(
+            'user_sources',
+            where="id=$id",
+            vars={'id': self.id},
+            category=self.category
         )
 
 
@@ -154,7 +176,7 @@ class SourceFactory:
             return res
 
         sql = """
-            SELECT s.*, us.title, us.is_active, us.read_count, us.like_count, us.category
+            SELECT s.type, s.url, us.id, us.title, us.is_active, us.read_count, us.like_count, us.category
             FROM user_sources us #FORCE INDEX (`idx-users_sources-user_id`)
             JOIN sources s ON us.source_id=s.id
             WHERE us.user_id=$user_id

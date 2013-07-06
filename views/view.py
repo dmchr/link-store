@@ -1,9 +1,10 @@
+# coding: utf-8
 import json
 
 import web
 
 import config
-from models.source import SourceFactory
+from models.source import SourceFactory, UserSource
 from models.article import ArticleFactory, UserArticle
 from models.user import login
 from models.service import save_opml
@@ -58,6 +59,31 @@ class SourceAdd:
         sf = SourceFactory()
         sf.add_to_user(user_id, s_type, url, title, config.default_source_category)
         raise web.seeother(SOURCE_LIST_URL)
+
+
+class SourceEdit:
+    def get_form(self, source_id, user_id):
+        form = web.form
+        us = UserSource(source_id, user_id)
+        return form.Form(
+            form.Hidden("source_id", value=source_id),
+            form.Textbox("title", value=us.title, description="Title"),
+            form.Textbox("category", value=us.category, description="Category"),
+            form.Button("submit", type="submit", description="Register")
+        )()
+
+    def GET(self, source_id):
+        user_id = get_user()
+        return render.app(render.source.edit(self.get_form(source_id, user_id)))
+
+    def POST(self, source_id):
+        user_id = get_user()
+        data = web.input()
+        if 'title' in data.keys() and 'category' in data.keys():
+            us = UserSource(source_id, user_id)
+            us.set_title(data.title)
+            us.set_category(data.category)
+        return render.app(render.source.edit(self.get_form(source_id,user_id)))
 
 
 class SourceDelete:
