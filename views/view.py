@@ -22,7 +22,7 @@ SOURCE_LIST_URL = '/source/list'
 HOME_SCREEN = '/article/list/unread/1'
 
 
-def check_user():
+def get_user():
     user_id = web.web_session.user_id
     if not user_id:
         raise web.seeother('/login')
@@ -36,7 +36,7 @@ class Index:
 
 class SourceList:
     def list(self):
-        user_id = check_user()
+        user_id = get_user()
         s = SourceFactory()
         l = s.list(user_id)
         return render.source.list(l)
@@ -50,7 +50,7 @@ class SourceAdd:
         raise web.seeother(SOURCE_LIST_URL)
 
     def POST(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         url = data.addSourceUrl
         title = data.addSourceTitle or ''
@@ -62,14 +62,15 @@ class SourceAdd:
 
 class SourceDelete:
     def GET(self, source_id):
+        user_id = get_user()
         s = SourceFactory()
-        s.delete(int(source_id))
+        s.delete_user_source(int(source_id), int(user_id))
         raise web.seeother(SOURCE_LIST_URL)
 
 
 class SourceDisable:
     def GET(self, source_id):
-        user_id = check_user()
+        user_id = get_user()
         s = SourceFactory()
         s.disable(int(source_id), user_id)
         raise web.seeother(SOURCE_LIST_URL)
@@ -77,7 +78,7 @@ class SourceDisable:
 
 class SourceEnable:
     def GET(self, source_id):
-        user_id = check_user()
+        user_id = get_user()
         s = SourceFactory()
         s.enable(int(source_id), user_id)
         raise web.seeother(SOURCE_LIST_URL)
@@ -98,7 +99,7 @@ class ServiceImportOpml:
         return render.app(self.load_window())
 
     def POST(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         if 'opml' in data.keys():
             opml = data.opml
@@ -110,7 +111,7 @@ class ServiceImportOpml:
 
 class ArticleRead:
     def POST(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -133,14 +134,14 @@ class ArticleList:
         return render.article.list(lst, page, count, paginate)
 
     def GET(self, mode, page):
-        user_id = check_user()
+        user_id = get_user()
         page = self.list(mode, page, user_id)
         return render.app(page)
 
 
 class ArticleLike:
     def POST(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -151,7 +152,7 @@ class ArticleLike:
 
 class ArticleDislike:
     def POST(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         article_id = data.article_id
         if not article_id:
@@ -162,7 +163,7 @@ class ArticleDislike:
 
 class ArticleAdd():
     def GET(self):
-        user_id = check_user()
+        user_id = get_user()
         data = web.input()
         url = data.u
         referrer = data.r

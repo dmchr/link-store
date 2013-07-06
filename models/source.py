@@ -176,9 +176,23 @@ class SourceFactory:
             return user_source.id
         return False
 
-    def delete(self, sid):
-        if sid and type(sid) == int:
-            DB.delete('sources', where="id=$id", vars={'id': sid})
+    def delete_source(self, source_id):
+        if source_id and type(source_id) == int:
+            DB.delete('sources', where="id=$id", vars={'id': source_id})
+        return True
+
+    def delete_user_source(self, source_id, user_id):
+        print source_id, type(source_id), user_id, type(user_id)
+        if not source_id or type(source_id) != int or not user_id or type(user_id) != int:
+            return False
+        DB.delete(
+            'user_sources',
+            where="source_id=$source_id AND user_id=$user_id",
+            vars={
+                'source_id': source_id,
+                'user_id': user_id
+            }
+        )
         return True
 
     def disable(self, sid, user_id):
