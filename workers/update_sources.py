@@ -4,14 +4,12 @@ import feedparser
 import os
 import pika
 import re
+import signal
 import socket
 import sys
 import time
 import urllib2
 from urlparse import urlparse
-
-timeout = 10
-socket.setdefaulttimeout(timeout)
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parentdir)
@@ -19,10 +17,19 @@ sys.path.append(parentdir)
 import config
 from models.article import Article, ArticleFactory, UserArticle
 
+timeout = config.socket_timeout
+socket.setdefaulttimeout(timeout)
+
 host = config.rabbit_host
 queue = config.que_update_source
 DB = config.DB
 twitter_feed_url = config.twitter_feed_url
+
+
+def signal_handler(signum, frame):
+    raise Exception('Signal handler called with signal: %s' % signum)
+
+signal.signal(signal.SIGALRM, signal_handler)
 
 
 def get_domain(url):
@@ -100,8 +107,10 @@ def update_feed(source):
     def get_http_response(url):
         req = urllib2.Request(url)
         try:
+            signal.alarm(timeout)
             response = urllib2.urlopen(req)
-        except urllib2.URLError as exc:
+            signal.alarm(0)
+        except Exception as exc:
             print exc
             return False
         return response

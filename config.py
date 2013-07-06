@@ -23,6 +23,8 @@ else:
 
 cache = False
 
+socket_timeout = 5
+
 items_per_page = 20
 unread_items_per_page = 20
 
