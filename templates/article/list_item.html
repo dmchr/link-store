@@ -9,6 +9,11 @@ $code:
             return u'%s...' % s[:max_len]
         else:
             return s
+    def format_rating(r):
+        if r < 10:
+            return '&nbsp;&nbsp;%s&nbsp;&nbsp;&nbsp;' % r
+        else:
+            return '%s&nbsp;&nbsp;&nbsp;' % r
 
 
 <div class="accordion-group">
@@ -29,7 +34,7 @@ $code:
             <a class="$unread_link_class" data-articlehead="$item.id" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
                 $format_title(item.title)
             </a>
-            <span class="pull-right">$format_date(item.published)</span>
+            <span class="pull-right">R:$:format_rating(item.rating) $format_date(item.published)</span>
         </div>
     </div>
     <div id="collapse$item.id" class="accordion-body collapse">

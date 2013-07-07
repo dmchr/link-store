@@ -314,7 +314,7 @@ class ArticleFactory:
 
     def get_all_sql(self):
         sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL
             ORDER BY a.id DESC
@@ -329,7 +329,7 @@ class ArticleFactory:
 
     def get_unread_sql(self):
         sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
             ORDER BY ua.rating desc, ua.id DESC
@@ -344,7 +344,7 @@ class ArticleFactory:
 
     def get_read_sql(self):
         sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
             ORDER BY ua.read_time DESC
@@ -359,7 +359,7 @@ class ArticleFactory:
 
     def get_liked_sql(self):
         sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count FROM articles a
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
                 JOIN user_articles ua ON a.id=ua.article_id
                 WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
                 ORDER BY ua.like_time DESC
