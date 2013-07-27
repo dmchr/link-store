@@ -29,12 +29,10 @@ $code:
                     like_label_func = 'dislikeArticle'
                 if item.is_read:
                     unread_link_class = 'article-head-read'
-            <a class="label $like_label_class article-title-like" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$:like_label_text</a>
-            <div class="article-title">
-                <a class="$unread_link_class" data-articlehead="$item.id">
-                    $format_title(item.title)
-                </a>
-            </div>
+            <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$:like_label_text</a>
+            <a class="$unread_link_class article-title" data-articlehead="$item.id">
+                $format_title(item.title)
+            </a>
             <span class="pull-right">$:format_rating(item.rating) $format_date(item.published)</span>
         </div>
     </div>

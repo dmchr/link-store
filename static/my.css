@@ -39,11 +39,8 @@ html, body {
 
 .article-title {
     display: inline-block;
-    width: 77%;
-    padding-left: 2px;
     overflow: hidden;
-}
-
-.article-title-like{
-    display: inline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 77%;
 }
