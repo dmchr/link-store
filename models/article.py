@@ -262,9 +262,7 @@ class ArticleFactory:
     def list(self, mode, page, user_id):
         items_per_page = config.items_per_page
 
-        if mode == 'all':
-            sql, sql_count = self.get_all_sql()
-        elif mode == 'unread':
+        if mode == 'unread':
             items_per_page = config.unread_items_per_page
             sql, sql_count = self.get_unread_sql()
         elif mode == 'read':
@@ -311,21 +309,6 @@ class ArticleFactory:
         if location_type and location:
             ua.add_location(location_type, location)
         return True
-
-    def get_all_sql(self):
-        sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
-            JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-            ORDER BY a.id DESC
-            LIMIT $limit OFFSET $offset
-        """
-        sql_count = """
-            SELECT count(a.id) cnt FROM articles a
-            JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-        """
-        return sql, sql_count
 
     def get_unread_sql(self):
         sql = """
