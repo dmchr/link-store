@@ -17,7 +17,7 @@ $code:
 
 
 <div class="accordion-group">
-    <div class="accordion-heading">
+    <div class="accordion-heading" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
         <div class="accordion-toggle">
             $code:
                 like_label_class = ''
@@ -31,7 +31,7 @@ $code:
                 if item.is_read:
                     unread_link_class = ''
             <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$like_label_text</a>
-            <a class="$unread_link_class" data-articlehead="$item.id" data-toggle="collapse" data-parent="#accordion2" href="#collapse$item.id">
+            <a class="$unread_link_class" data-articlehead="$item.id">
                 $format_title(item.title)
             </a>
             <span class="pull-right">R:$:format_rating(item.rating) $format_date(item.published)</span>
