@@ -23,11 +23,27 @@ html, body {
     font-weight: bold
 }
 
+.article-head-read{}
+
 .accordion-group{
     margin-bottom: 1px !important;
 }
 
 .accordion-toggle{
-    padding-top: 3px !important;
-    padding-bottom: 3px !important;
+    padding: 3px 5px !important;
+}
+
+.accordion-toggle-toolbar {
+    margin: 3px 5px;
+}
+
+.article-title {
+    display: inline-block;
+    width: 79%;
+    padding-left: 2px;
+    overflow: hidden;
+}
+
+.article-title-like{
+    display: inline;
 }
