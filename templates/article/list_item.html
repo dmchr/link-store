@@ -43,6 +43,8 @@ $code:
             <div class="accordion-toggle-toolbar">
                 <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$like_label_text</a>
                 <a class="label" data-toggle="source-popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-original-title="Sources" data-container="body">Sources: $item.source_count</a>
+                <a class="label" href="mailto:add@getpocket.com?subject=SaveThis&body=$item.url">To Pocket</a>
+                <a class="label" href="mailto:drops@ukeeper.com?subject=$item.title&body=$item.url">To Evernote</a>
                 <a class="label" href="$item.url" target="_blank">Original</a>
             </div>
         </div>
