@@ -230,7 +230,7 @@ class UserArticle:
         return True
 
     def dislike(self):
-        return self.like(is_liked=0)
+        return self.like(is_liked=2)
 
 
 class ArticleFactory:

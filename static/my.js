@@ -11,14 +11,28 @@ function createAutoClosingAlert(selector, delay) {
     }, delay);
 }
 
-function toggleLikeButton(article_id, data) {
+function toggleLikeButton(el, data) {
     var res = $.parseJSON(data);
     if (res.success) {
-        $('[data-likebutton=' + article_id + ']').toggleClass('label-success');
+        var article_id = el.data('likebutton-itemid');
+        var elements = $('[data-likebutton-itemid=' + article_id + ']');
+
+        if (el.hasClass('label-success') || el.hasClass('label-inverse')) {
+            elements.toggleClass('label-inverse');
+        }
+        elements.toggleClass('label-success');
     }
 }
 
-function readArticle(article_id) {
+function likeButtonOnClick(el) {
+    if (el.hasClass('label-success')) {
+        dislikeArticle(el);
+    } else {
+        likeArticle(el);
+    }
+}
+
+function initArticle(article_id) {
     $('#collapse' + article_id).on('shown', function () {
         $('html, body').scrollTop($('#collapse' + article_id).offset().top - 80);
         $.post(
@@ -30,25 +44,28 @@ function readArticle(article_id) {
         $('[data-articlehead=' + article_id + ']').removeClass('article-head-unread');
         Nav.currentItem = article_id;
     });
+
     $('[data-toggle="source-popover"]').popover();
 }
 
-function likeArticle(article_id) {
+function likeArticle(el) {
+    var article_id = el.data('likebutton-itemid');
     $.post(
         '/a/like',
         {article_id: article_id},
         function (data) {
-            toggleLikeButton(article_id, data);
+            toggleLikeButton(el, data);
         }
     );
 }
 
-function dislikeArticle(article_id) {
+function dislikeArticle(el) {
+    var article_id = el.data('likebutton-itemid');
     $.post(
         '/a/dislike',
         {article_id: article_id},
         function (data) {
-            toggleLikeButton(article_id, data);
+            toggleLikeButton(el, data);
         }
     );
 }
@@ -98,7 +115,13 @@ function goToPreviuos() {
     goToArticle(Nav.previousItem);
 }
 
-$(document).ready(function () {
+function initLikeButtons() {
+    $(".like-label").click(function () {
+        likeButtonOnClick($(this))
+    });
+}
+
+function initHotkeys() {
     $("body").keydown(function (e) {
         if (e.keyCode == 74) { // J down
             goToNext();
@@ -107,4 +130,9 @@ $(document).ready(function () {
             goToPreviuos();
         }
     });
+}
+
+$(document).ready(function () {
+    initHotkeys();
+    initLikeButtons();
 });

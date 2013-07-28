@@ -24,12 +24,14 @@ $code:
                 like_label_func = 'likeArticle'
                 like_label_text = 'Ъ'
                 unread_link_class = 'article-head-unread'
-                if item.is_liked:
+                if item.is_liked == 1:
                     like_label_class = 'label-success'
                     like_label_func = 'dislikeArticle'
+                elif item.is_liked == 2:
+                    like_label_class = 'label-inverse'
                 if item.is_read:
                     unread_link_class = 'article-head-read'
-            <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$:like_label_text</a>
+            <a class="label like-label $like_label_class" data-likebutton-itemid="$item.id">$like_label_text</a>
             <a class="$unread_link_class article-title" data-articlehead="$item.id">
                 $format_title(item.title)
             </a>
@@ -41,7 +43,7 @@ $code:
             $:item.description
         </div>
         <div class="accordion-toggle-toolbar">
-                <a class="label $like_label_class" data-likebutton="$item.id" onclick="$like_label_func ($item.id)">$:like_label_text</a>
+                <a class="label like-label $like_label_class" data-likebutton-itemid="$item.id">$like_label_text</a>
                 <a class="label" data-toggle="source-popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-original-title="Sources" data-container="body">Sources: $item.source_count</a>
                 <a class="label" href="mailto:add@getpocket.com?subject=SaveThis&body=$item.url">To Pocket</a>
                 <a class="label" href="mailto:drops@ukeeper.com?subject=$item.title&body=$item.url">To Evernote</a>
@@ -52,6 +54,6 @@ $code:
 
 <script>
     $$(document).ready(function() {
-        readArticle($item.id);
+        initArticle($item.id);
     });
 </script>
