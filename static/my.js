@@ -116,7 +116,8 @@ function goToPreviuos() {
 }
 
 function initLikeButtons() {
-    $(".like-label").click(function () {
+    $(".like-label").click(function (event) {
+        event.stopPropagation();
         likeButtonOnClick($(this))
     });
 }
