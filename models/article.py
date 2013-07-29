@@ -224,7 +224,10 @@ class UserArticle:
             )
             source_id = self._get_source_id()
             if source_id:
-                SourceFactory().increase_like_count(source_id, self.user_id)
+                if is_liked == 1:
+                    SourceFactory().increase_like_count(source_id, self.user_id)
+                else:
+                    SourceFactory().decrease_like_count(source_id, self.user_id)
         else:
             return False
         return True

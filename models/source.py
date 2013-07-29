@@ -241,7 +241,7 @@ class SourceFactory:
             read_count=web.db.SQLLiteral('read_count+1')
         )
 
-    def increase_like_count(self, source_id, user_id):
+    def change_like_count(self, source_id, user_id, literal):
         return DB.update(
             'user_sources',
             where="source_id=$source_id AND user_id=$user_id",
@@ -249,8 +249,14 @@ class SourceFactory:
                 'user_id': user_id,
                 'source_id': source_id
             },
-            like_count=web.db.SQLLiteral('like_count+1')
+            like_count=web.db.SQLLiteral(literal)
         )
+
+    def increase_like_count(self, source_id, user_id):
+        return self.change_like_count(source_id, user_id, 'like_count+1')
+
+    def decrease_like_count(self, source_id, user_id):
+        return self.change_like_count(source_id, user_id, 'like_count-1')
 
     def load_news(self):
         rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL", limit=500)
