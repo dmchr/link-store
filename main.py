@@ -8,7 +8,6 @@ urls = (
     '/source/delete/(\d+)', 'views.view.SourceDelete',
     '/source/enable/(\d+)', 'views.view.SourceEnable',
     '/source/disable/(\d+)', 'views.view.SourceDisable',
-    '/service/load-news', 'views.view.ServiceLoadNews',
     '/service/import-opml', 'views.view.ServiceImportOpml',
     '/article/list/(.+)/(\d+)', 'views.view.ArticleList',
     '/a/add', 'views.view.ArticleAdd',

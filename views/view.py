@@ -110,13 +110,6 @@ class SourceEnable:
         raise web.seeother(SOURCE_LIST_URL)
 
 
-class ServiceLoadNews:
-    def GET(self):
-        s = SourceFactory()
-        s.load_news()
-        raise web.seeother(HOME_SCREEN)
-
-
 class ServiceImportOpml:
     def load_window(self):
         return render.service.import_opml_form()

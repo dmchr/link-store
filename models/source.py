@@ -257,8 +257,3 @@ class SourceFactory:
 
     def decrease_like_count(self, source_id, user_id):
         return self.change_like_count(source_id, user_id, 'like_count-1')
-
-    def load_news(self):
-        rows = DB.select('sources', where="NOW() - INTERVAL 1 HOUR > last_update OR last_update is NULL", limit=500)
-        for source in rows:
-            create_job('sources_for_update', str(source.id))

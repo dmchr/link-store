@@ -29,17 +29,6 @@ $:render.head()
     </div>
 </div>
 
-<!-- Modal "Waiting"-->
-<div id="modalWaiting" class="modal hide fade">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3>Loading</h3>
-    </div>
-    <div class="modal-body">
-        <p>Please wait...</p>
-    </div>
-</div>
-
 <div class="alert-message fade out">
     <button type="button" class="close" data-dismiss="alert">×</button>
     <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
@@ -57,7 +46,6 @@ $:render.head()
                 <li><a href="/source/list">Source list</a></li>
                 <li class="nav-header">Actions</li>
                 <li><a href="#modalAddSource" data-toggle="modal">Add source</a></li>
-                <li><a href="/service/load-news" data-toggle="modal" onclick="$$('#modalWaiting').modal({keyboard: false});">Load news</a></li>
                 <li><a href="/service/import-opml">Import OPML</a></li>
                 <li class="divider"></li>
                 <li><a href="#">Help</a></li>
