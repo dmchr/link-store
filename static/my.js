@@ -32,16 +32,19 @@ function likeButtonOnClick(el) {
     }
 }
 
+function readArticle(article_id) {
+    $.post(
+        "/a/read",
+        {article_id: article_id},
+        function (data) {}
+    );
+    $('[data-articlehead=' + article_id + ']').removeClass('article-head-unread');
+}
+
 function initArticle(article_id) {
     $('#collapse' + article_id).on('shown', function () {
         $('html, body').scrollTop($('#collapse' + article_id).offset().top - 80);
-        $.post(
-            "/a/read",
-            {article_id: article_id},
-            function (data) {
-            }
-        );
-        $('[data-articlehead=' + article_id + ']').removeClass('article-head-unread');
+        readArticle(article_id);
         Nav.currentItem = article_id;
     });
 
@@ -113,6 +116,19 @@ function goToPreviuos() {
         }
     }
     goToArticle(Nav.previousItem);
+}
+
+function markAllPageItemsAsRead() {
+    $.post(
+        '/a/read-all',
+        {article_ids: JSON.stringify(article_ids)},
+        function (data) {
+            var res = $.parseJSON(data);
+            if (res.success) {
+                $(".article-head-unread").addClass("article-head-read").removeClass("article-head-unread");
+            }
+        }
+    );
 }
 
 function initLikeButtons() {

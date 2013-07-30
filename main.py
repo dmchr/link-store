@@ -12,6 +12,7 @@ urls = (
     '/article/list/(.+)/(\d+)', 'views.view.ArticleList',
     '/a/add', 'views.view.ArticleAdd',
     '/a/read', 'views.view.ArticleRead',
+    '/a/read-all', 'views.view.ArticleReadAll',
     '/a/like', 'views.view.ArticleLike',
     '/a/dislike', 'views.view.ArticleDislike',
     '/login', 'views.view.Login',

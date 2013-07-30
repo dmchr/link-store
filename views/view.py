@@ -134,9 +134,29 @@ class ArticleRead:
         data = web.input()
         article_id = data.article_id
         if not article_id:
-            json.dumps({'success': False})
+            return json.dumps({'success': False})
         ua = UserArticle(user_id=user_id, article_id=article_id)
         return json.dumps({'success': ua.read()})
+
+    def GET(self):
+        return json.dumps({'success': True})
+
+
+class ArticleReadAll:
+    def POST(self):
+        user_id = get_user()
+        data = web.input()
+        try:
+            article_ids = json.loads(data.article_ids)
+        except ValueError:
+            return json.dumps({'success': False, 'msg': 'Invalid data format'})
+
+        if not article_ids:
+            return json.dumps({'success': False})
+        for article_id in article_ids:
+            ua = UserArticle(user_id=user_id, article_id=article_id)
+            ua.read()
+        return json.dumps({'success': True})
 
     def GET(self):
         return json.dumps({'success': True})
@@ -164,7 +184,7 @@ class ArticleLike:
         data = web.input()
         article_id = data.article_id
         if not article_id:
-            json.dumps({'success': False})
+            return json.dumps({'success': False})
         ua = UserArticle(user_id=user_id, article_id=article_id)
         return json.dumps({'success': ua.like()})
 
@@ -175,7 +195,7 @@ class ArticleDislike:
         data = web.input()
         article_id = data.article_id
         if not article_id:
-            json.dumps({'success': False})
+            return json.dumps({'success': False})
         ua = UserArticle(user_id=user_id, article_id=article_id)
         return json.dumps({'success': ua.dislike()})
 
