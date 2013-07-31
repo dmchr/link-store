@@ -8,3 +8,7 @@ def login(username):
     if res:
         return res[0]
     return False
+
+
+def get_users():
+    return DB.select('users')
