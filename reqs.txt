@@ -9,4 +9,6 @@ python-social-auth
 nose
 coverage
 opml
-
+pymorphy2
+pymorphy2-dicts
+DAWG-Python
