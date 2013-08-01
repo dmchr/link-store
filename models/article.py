@@ -5,6 +5,7 @@ import time
 import web
 from mq import create_job
 from source import SourceFactory, UserSource
+from classifier import FeatureParser, FisherClassifier
 
 DB = config.DB
 
@@ -150,6 +151,12 @@ class UserArticle:
         if like_count == 0 or read_count == 0:
             return 1
         rating = int(round(like_count * 100 / read_count))
+
+        p = FeatureParser()
+        cl = FisherClassifier()
+        features = p.get_features(self.article)
+        rating += cl.get_rating(features, self.user_id)
+
         return rating
 
     def _update_rating(self):

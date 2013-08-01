@@ -163,13 +163,13 @@ class FisherClassifier(Classifier):
             return 0
         return self.minimums[cat]
 
-    def classify(self, item, user_id, default=None):
+    def classify(self, features, user_id, default=None):
         # Loop through looking for the best result
         best = default
         max_prob = 0.0
         res = {'cat': None, 'good': 0, 'bad': 0}
         for c in self.categories(user_id):
-            p = self.fisherprob(item, c, user_id)
+            p = self.fisherprob(features, c, user_id)
             # Make sure it exceeds its minimum
             if p > self.getminimum(c) and p > max_prob:
                 best = c
@@ -179,10 +179,10 @@ class FisherClassifier(Classifier):
         print res
         return res
 
-    def get_rating(self, item, user_id, default=None):
-        res = self.classify(item, user_id, default)
+    def get_rating(self, features, user_id, default=None):
+        res = self.classify(features, user_id, default)
         rating = res['good'] - res['bad']
-        rating = round(rating, 2) * 100
+        rating = int(round(rating, 2) * 100)
         return rating
 
 
