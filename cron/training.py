@@ -44,8 +44,9 @@ def get_words(doc):
         w = w.lower().replace('_', '')
 
         if _is_good_words(w.lower()):
-            res = ma.parse(w)[0]
-            words.append(res.normal_form)
+            res = ma.parse(w)
+            if res:
+                words.append(res[0].normal_form)
 
     # Return the unique set of words only
     result = dict([(w, 1) for w in words])
@@ -100,5 +101,5 @@ def run_training(cl):
 
 
 cl = FisherClassifier(get_words)
-desroy_classifier_data()
+#desroy_classifier_data()
 run_training(cl)
