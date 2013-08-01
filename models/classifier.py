@@ -1,18 +1,21 @@
 # coding: utf-8
-import config
 import math
+import re
+import pymorphy2
 import web
+
+import config
+from models.word_lists import excluded_words
 
 DB = config.DB
 
 
 class Classifier:
-    def __init__(self, get_features_fnc):
+    def __init__(self):
         # Счетчики комбинаций признак/категория
         self.fc = {}
         # Счетчики документов в каждой категории
         self.cc = {}
-        self.get_features = get_features_fnc
 
     # Увеличить счетчик пар признак/категория
     def inc_f(self, f, cat, user_id):
@@ -104,8 +107,7 @@ class Classifier:
         bp = ((weight * ap) + (totals * basicprob)) / (weight + totals)
         return bp
 
-    def train(self, item, cat, user_id):
-        features = self.get_features(item)
+    def train(self, features, cat, user_id):
         # Увеличить счетчики для каждого признака в данной классификации
         for f in features:
             self.inc_f(f, cat, user_id)
@@ -115,8 +117,8 @@ class Classifier:
 
 
 class FisherClassifier(Classifier):
-    def __init__(self, getfeatures):
-        Classifier.__init__(self, getfeatures)
+    def __init__(self):
+        Classifier.__init__(self)
         self.minimums = {}
 
     def cprob(self, f, cat, user_id):
@@ -133,10 +135,9 @@ class FisherClassifier(Classifier):
         p = clf / freqsum
         return p
 
-    def fisherprob(self, item, cat, user_id):
+    def fisherprob(self, features, cat, user_id):
         # Multiply all the probabilities together
         p = 1
-        features = self.get_features(item)
         for f in features:
             p *= (self.weighted_prob(f, cat, user_id, self.cprob))
 
@@ -174,3 +175,50 @@ class FisherClassifier(Classifier):
                 max_prob = p
             print c, p
         return best
+
+
+class FeatureParser:
+    def print_word_array(self, words):
+        print '----------------------------------------'
+        for word in words:
+            print u"'{0}-{1}',".format(word, len(word)),
+        print ''
+        print '----------------------------------------'
+
+    def _is_good_words(self, word):
+        if word in excluded_words:
+            return False
+        if len(word) < 5 or len(word) > 13:
+            return False
+
+        return True
+
+    def _is_contains_number(self, word):
+        num = re.compile('.*\\d+.*')
+        if num.match(word):
+            return True
+
+    def _get_words(self, txt):
+        # Split the words by non-alpha characters
+        splitter = re.compile('\\W*', re.UNICODE)
+        words = []
+        ma = pymorphy2.MorphAnalyzer()
+        arr = set(splitter.split(txt))
+        for w in arr:
+            w = w.lower().replace('_', '')
+            if not self._is_good_words(w) or self._is_contains_number(w):
+                continue
+
+            res = ma.parse(w)
+            if res:
+                w = res[0].normal_form
+                if self._is_good_words(w):
+                    words.append(w)
+
+        # Return the unique set of words only
+        result = sorted(set(words))
+        #self.print_word_array(result)
+        return result
+
+    def get_features(self, article):
+        return self._get_words(article.description)
