@@ -167,14 +167,23 @@ class FisherClassifier(Classifier):
         # Loop through looking for the best result
         best = default
         max_prob = 0.0
+        res = {'cat': None, 'good': 0, 'bad': 0}
         for c in self.categories(user_id):
             p = self.fisherprob(item, c, user_id)
             # Make sure it exceeds its minimum
             if p > self.getminimum(c) and p > max_prob:
                 best = c
                 max_prob = p
-            print c, p
-        return best
+            res[c] = p
+        res['cat'] = best
+        print res
+        return res
+
+    def get_rating(self, item, user_id, default=None):
+        res = self.classify(item, user_id, default)
+        rating = res['good'] - res['bad']
+        rating = round(rating, 2) * 100
+        return rating
 
 
 class FeatureParser:
