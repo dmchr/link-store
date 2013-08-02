@@ -309,11 +309,12 @@ class ArticleFactory:
             article_id = art.id
             if not art.title:
                 create_job(config.que_download_article, str(article_id))
-            if user_id:
-                self.link_article_to_user(article_id, user_id, location_type, location)
         else:
             article_id = DB.insert('articles', url=url)
             create_job(config.que_download_article, str(article_id))
+
+        if user_id:
+            self.link_article_to_user(article_id, user_id, location_type, location)
         return article_id
 
     def link_article_to_user(self, article_id, user_id, location_type=None, location=None):
@@ -335,14 +336,14 @@ class ArticleFactory:
         sql = """
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0 AND title IS NOT NULL
             ORDER BY ua.rating desc, ua.id DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0 AND title IS NOT NULL
         """
         return sql, sql_count
 
@@ -350,14 +351,14 @@ class ArticleFactory:
         sql = """
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1 AND title IS NOT NULL
             ORDER BY ua.read_time DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1 AND title IS NOT NULL
         """
         return sql, sql_count
 
@@ -365,13 +366,13 @@ class ArticleFactory:
         sql = """
                 SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
                 JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1 AND title IS NOT NULL
                 ORDER BY ua.like_time DESC
                 LIMIT $limit OFFSET $offset
             """
         sql_count = """
                 SELECT count(a.id) cnt FROM articles a
                 JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1 AND title IS NOT NULL
             """
         return sql, sql_count
