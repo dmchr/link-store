@@ -202,16 +202,25 @@ class ArticleDislike:
 
 class ArticleAdd():
     def GET(self):
-        user_id = get_user()
         data = web.input()
         url = data.u
         referrer = data.r
+        username = data.l
         #time = data.t
         if not url:
             return False
+        res = login(username)
+        if res:
+            user_id = res['id']
 
-        article_id = ArticleFactory().add(url, user_id, location_type='browser', location=referrer)
-        return json.dumps({'success': True, 'article_id': article_id})
+        ArticleFactory().add(url, user_id, location_type='browser', location=referrer)
+
+        js = """
+        var d = document;
+        d.title = d.title.replace(/\(Saving...\) /g, '');
+        """
+        web.header('Content-type', 'text/javascript')
+        return js
 
 
 class Login():

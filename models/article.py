@@ -182,6 +182,17 @@ class UserArticle:
         :rtype:  int or bool
         :return: articles_locations.id или False
         """
+        res = DB.select(
+            'articles_locations',
+            where="user_article_id=$user_article_id AND location_type=$location_type AND location=$location",
+            vars={
+                'user_article_id': self.id,
+                'location_type': location_type,
+                'location': location
+            }
+        )
+        if res:
+            return True
         res = DB.insert(
             'articles_locations',
             user_article_id=self.id,
@@ -252,7 +263,7 @@ class ArticleFactory:
             return DB.select('articles', where="url=$url", vars={'url': url}, limit=1)
         else:
             sql = """
-                SELECT a.id, a.title, ua.user_id FROM articles a
+                SELECT a.id, a.url, a.title, a.description, ua.user_id FROM articles a
                 LEFT JOIN user_articles ua ON a.id=ua.article_id AND ua.user_id=$user_id
                 WHERE a.url = $url
             """
@@ -298,7 +309,7 @@ class ArticleFactory:
             article_id = art.id
             if not art.title:
                 create_job(config.que_download_article, str(article_id))
-            if user_id and not art.user_id:
+            if user_id:
                 self.link_article_to_user(article_id, user_id, location_type, location)
         else:
             article_id = DB.insert('articles', url=url)
