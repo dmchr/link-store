@@ -1,15 +1,15 @@
 /*
  Source Server         : localhost
  Source Server Type    : MySQL
- Source Server Version : 50529
+ Source Server Version : 50522
  Source Host           : localhost
  Source Database       : linkstore
 
  Target Server Type    : MySQL
- Target Server Version : 50529
+ Target Server Version : 50522
  File Encoding         : utf-8
 
- Date: 07/04/2013 01:53:56 AM
+ Date: 08/02/2013 12:48:42 PM
 */
 
 SET NAMES utf8;
@@ -20,7 +20,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `articles`;
 CREATE TABLE `articles` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `url` varchar(1024) NOT NULL,
   `title` varchar(1024) DEFAULT NULL,
   `description` text,
@@ -35,8 +35,8 @@ CREATE TABLE `articles` (
 -- ----------------------------
 DROP TABLE IF EXISTS `articles_locations`;
 CREATE TABLE `articles_locations` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_article_id` int(11) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_article_id` int(10) unsigned NOT NULL,
   `location_type` enum('article','browser','source') NOT NULL,
   `location` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -45,11 +45,41 @@ CREATE TABLE `articles_locations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+--  Table structure for `cc`
+-- ----------------------------
+DROP TABLE IF EXISTS `cc`;
+CREATE TABLE `cc` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `category` varchar(32) NOT NULL,
+  `cnt` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx-cc-user_id` (`user_id`) USING BTREE,
+  CONSTRAINT `fk-cc-user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+--  Table structure for `fc`
+-- ----------------------------
+DROP TABLE IF EXISTS `fc`;
+CREATE TABLE `fc` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `feature` varchar(32) NOT NULL,
+  `category` varchar(32) NOT NULL,
+  `cnt` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx-fc-user_id` (`user_id`) USING BTREE,
+  KEY `idx-fc-all` (`user_id`,`feature`,`category`) USING HASH,
+  CONSTRAINT `fk-fc-user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
 --  Table structure for `sources`
 -- ----------------------------
 DROP TABLE IF EXISTS `sources`;
 CREATE TABLE `sources` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `type` enum('feed','twitter') NOT NULL DEFAULT 'feed',
   `title` varchar(512) NOT NULL DEFAULT 'No title',
   `url` varchar(1024) NOT NULL,
@@ -62,20 +92,21 @@ CREATE TABLE `sources` (
 -- ----------------------------
 DROP TABLE IF EXISTS `user_articles`;
 CREATE TABLE `user_articles` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned NOT NULL,
-  `article_id` int(11) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `article_id` int(10) unsigned NOT NULL,
   `rating` tinyint(2) unsigned DEFAULT '0',
-  `is_read` tinyint(3) NOT NULL DEFAULT '0',
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
   `read_time` timestamp NULL DEFAULT NULL,
-  `is_liked` tinyint(3) NOT NULL DEFAULT '0',
+  `is_liked` tinyint(1) NOT NULL DEFAULT '0',
   `like_time` timestamp NULL DEFAULT NULL,
+  `is_handled` tinyint(1) NOT NULL DEFAULT '0',
   `source_count` tinyint(3) unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq-user_articles` (`user_id`,`article_id`) USING BTREE,
   KEY `idx-user_article-user_id` (`user_id`) USING BTREE,
   KEY `idx-user_article-article_id` (`article_id`) USING BTREE,
-  KEY `idx-user_articles-rating` (`rating`) USING BTREE,
+  KEY `idx-user_articles-weigth` (`rating`) USING BTREE,
   CONSTRAINT `fk-users_articles-article_id` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk-users_articles-user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -85,8 +116,8 @@ CREATE TABLE `user_articles` (
 -- ----------------------------
 DROP TABLE IF EXISTS `user_opml`;
 CREATE TABLE `user_opml` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned DEFAULT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned DEFAULT NULL,
   `opml` text,
   `is_handled` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -99,9 +130,10 @@ CREATE TABLE `user_opml` (
 -- ----------------------------
 DROP TABLE IF EXISTS `user_sources`;
 CREATE TABLE `user_sources` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned NOT NULL,
-  `source_id` int(11) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `source_id` int(10) unsigned NOT NULL,
+  `title` varchar(512) NOT NULL DEFAULT 'No title',
   `is_active` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `read_count` int(11) NOT NULL DEFAULT '0',
   `like_count` int(11) NOT NULL DEFAULT '0',
@@ -121,17 +153,9 @@ CREATE TABLE `user_sources` (
 -- ----------------------------
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL,
   `name` varchar(32) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
---  Records of `users`
--- ----------------------------
-BEGIN;
-INSERT INTO `users` VALUES ('1', 'Test');
-COMMIT;
-
 
 SET FOREIGN_KEY_CHECKS = 1;
