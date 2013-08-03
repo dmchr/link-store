@@ -10,6 +10,7 @@ urls = (
     '/source/disable/(\d+)', 'views.view.SourceDisable',
     '/service/import-opml', 'views.view.ServiceImportOpml',
     '/article/list/(.+)/(\d+)', 'views.view.ArticleList',
+    '/s/add', 'views.view.SourceAdd',
     '/a/add', 'views.view.ArticleAdd',
     '/a/read', 'views.view.ArticleRead',
     '/a/read-all', 'views.view.ArticleReadAll',

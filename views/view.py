@@ -48,13 +48,32 @@ class SourceList:
 
 class SourceAdd:
     def GET(self):
-        raise web.seeother(SOURCE_LIST_URL)
+        data = web.input()
+        url = data.u
+        title = data.t or 'No title'
+        username = data.l
+        if not url:
+            return False
+        res = login(username)
+        if not res:
+            return json.dumps({'success': False})
+        user_id = res['id']
+
+        sf = SourceFactory()
+        sf.add_to_user(user_id, 'feed', url, title, config.default_source_category)
+
+        js = """
+        var d = document;
+        d.title = d.title.replace(/\(Saving...\) /g, '');
+        """
+        web.header('Content-type', 'text/javascript')
+        return js
 
     def POST(self):
         user_id = get_user()
         data = web.input()
         url = data.addSourceUrl
-        title = data.addSourceTitle or ''
+        title = data.addSourceTitle or 'No title'
         s_type = data.addSourceType
         sf = SourceFactory()
         sf.add_to_user(user_id, s_type, url, title, config.default_source_category)
