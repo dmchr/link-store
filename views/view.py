@@ -67,6 +67,7 @@ class SourceEdit:
         us = UserSource(source_id, user_id)
         return form.Form(
             form.Hidden("source_id", value=source_id),
+            form.Textbox("url", value=us.source.url, description="URL"),
             form.Textbox("title", value=us.title, description="Title"),
             form.Textbox("category", value=us.category, description="Category"),
             form.Button("submit", type="submit", description="Register")
