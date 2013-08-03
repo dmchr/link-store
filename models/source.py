@@ -211,11 +211,6 @@ class SourceFactory:
             return user_source.id
         return False
 
-    def delete_source(self, source_id):
-        if source_id and type(source_id) == int:
-            DB.delete('sources', where="id=$id", vars={'id': source_id})
-        return True
-
     def delete_user_source(self, user_source_id, user_id):
         if not user_source_id or type(user_source_id) != int or not user_id or type(user_id) != int:
             return False
