@@ -230,8 +230,9 @@ class ArticleAdd():
         if not url:
             return False
         res = login(username)
-        if res:
-            user_id = res['id']
+        if not res:
+            return json.dumps({'success': False})
+        user_id = res['id']
 
         ArticleFactory().add(url, user_id, location_type='browser', location=referrer)
 
