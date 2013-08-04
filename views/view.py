@@ -75,8 +75,9 @@ class SourceAdd:
         url = data.addSourceUrl
         title = data.addSourceTitle or 'No title'
         s_type = data.addSourceType
+        category = data.addSourceCategory or config.default_source_category
         sf = SourceFactory()
-        sf.add_to_user(user_id, s_type, url, title, config.default_source_category)
+        sf.add_to_user(user_id, s_type, url, title, category)
         raise web.seeother(SOURCE_LIST_URL)
 
 

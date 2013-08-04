@@ -55,7 +55,7 @@ class Source:
     def _insert(self, type, url):
         if type == 'feed':
             parse_result = feedparser.parse(url)
-            if parse_result:
+            if parse_result and parse_result.feed:
                 title = parse_result.feed.title
                 return DB.insert('sources', type=type, url=url, title=title)
         elif type == 'twitter':
@@ -204,7 +204,10 @@ class SourceFactory:
         return prepare_items(items)
 
     def add_to_user(self, user_id, source_type, url, title=None, category=None):
-        source = Source(type=source_type, url=url)
+        try:
+            source = Source(type=source_type, url=url)
+        except SourceException:
+            return False
         if source.id:
             user_source = UserSource(user_id=user_id, source_id=source.id, title=title, category=category)
         if user_source.id:
