@@ -37,3 +37,5 @@ que_update_source = 'sources_for_update'
 twitter_feed_url = 'http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s'
 
 default_source_category = 'No category'
+
+YA_Metrika_ID = 0
