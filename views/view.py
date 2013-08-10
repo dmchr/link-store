@@ -229,7 +229,6 @@ class ArticleAdd():
         url = data.u
         referrer = data.r.split('?')[0]
         username = data.l.split('?')[0]
-        #time = data.t
         if not url:
             return False
         res = login(username)
