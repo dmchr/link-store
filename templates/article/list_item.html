@@ -31,11 +31,22 @@ $code:
                     like_label_class = 'label-inverse'
                 if item.is_read:
                     unread_link_class = 'article-head-read'
-            <a class="label like-label $like_label_class" data-likebutton-itemid="$item.id">$like_label_text</a>
-            <a class="$unread_link_class article-title" data-articlehead="$item.id">
-                $format_title(item.title)
-            </a>
-            <span class="pull-right">$:format_rating(item.rating) $format_date(item.published)</span>
+            <div>
+                <a class="label like-label $like_label_class" data-likebutton-itemid="$item.id">$like_label_text</a>
+                <a class="$unread_link_class article-title" data-articlehead="$item.id">
+                    $format_title(item.title)
+                </a>
+                <span class="pull-right">$:format_rating(item.rating) $format_date(item.published)</span>
+            </div>
+            <div>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span>Source:
+                    $if item.location_type == 'source':
+                        <a href="#">$format_title(item.stitle)</a>
+                    $else:
+                        from browser
+                </span>
+            </div>
         </div>
     </div>
     <div id="collapse$item.id" class="accordion-body collapse">

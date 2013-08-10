@@ -337,62 +337,88 @@ class ArticleFactory:
 
     def get_unread_sql(self):
         sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating, al.location_type, al.location,
+                   s.title stitle
+            FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
+            LEFT JOIN sources s ON al.location=s.id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+            GROUP BY a.id
             ORDER BY ua.rating desc, ua.id DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
+            GROUP BY a.id
         """
         return sql, sql_count
 
     def get_read_sql(self):
         sql = """
-            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating, al.location_type, al.location,
+                   s.title stitle
+            FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
+            LEFT JOIN sources s ON al.location=s.id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+            GROUP BY a.id
             ORDER BY ua.read_time DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
             WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
+            GROUP BY a.id
         """
         return sql, sql_count
 
     def get_liked_sql(self):
         sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
-                ORDER BY ua.like_time DESC
-                LIMIT $limit OFFSET $offset
-            """
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating, al.location_type, al.location,
+                   s.title stitle
+            FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
+            LEFT JOIN sources s ON al.location=s.id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
+            GROUP BY a.id
+            ORDER BY ua.like_time DESC
+            LIMIT $limit OFFSET $offset
+        """
         sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
-            """
+            SELECT count(a.id) cnt FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
+            GROUP BY a.id
+        """
         return sql, sql_count
 
     def get_browser_sql(self):
         sql = """
-                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-                ORDER BY ua.id DESC
-                LIMIT $limit OFFSET $offset
-            """
+            SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating, al.location_type, al.location,
+               s.title stitle
+            FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
+            LEFT JOIN sources s ON al.location=s.id
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+            GROUP BY a.id
+            ORDER BY ua.id DESC
+            LIMIT $limit OFFSET $offset
+        """
         sql_count = """
-                SELECT count(a.id) cnt FROM articles a
-                JOIN user_articles ua ON a.id=ua.article_id
-                JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
-            """
+            SELECT count(a.id) cnt FROM articles a
+            JOIN user_articles ua ON a.id=ua.article_id
+            JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+            GROUP BY a.id
+        """
         return sql, sql_count
