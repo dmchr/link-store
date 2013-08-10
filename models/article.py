@@ -330,8 +330,9 @@ class ArticleFactory:
         :rtype: bool
         """
         ua = UserArticle(user_id=user_id, article_id=article_id)
-        if location_type and location:
+        if (location_type and location) or location_type == 'browser':
             ua.add_location(location_type, location)
+            ua.inc_source_count()
         return True
 
     def get_unread_sql(self):
