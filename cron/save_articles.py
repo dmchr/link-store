@@ -18,7 +18,10 @@ DB = config.DB
 
 
 def get_url(art_id):
-    return DB.select('articles', where="id=$article_id", vars={'article_id': art_id})[0]['url']
+    res = DB.select('articles', where="id=$article_id", vars={'article_id': art_id})
+    if res:
+        return res[0]['url']
+    return False
 
 
 def get_domain(url):
@@ -68,8 +71,9 @@ def callback(ch, method, properties, body):
     print " [x] Received %r" % (body,)
     art_id = int(body)
     url = get_url(art_id)
-    title, article = download_article(url)
-    insert_article(art_id, title, article)
+    if url:
+        title, article = download_article(url)
+        insert_article(art_id, title, article)
     print " [x] Done"
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
