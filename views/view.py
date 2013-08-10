@@ -227,8 +227,8 @@ class ArticleAdd():
     def GET(self):
         data = web.input()
         url = data.u
-        referrer = data.r
-        username = data.l
+        referrer = data.r.split('?')[0]
+        username = data.l.split('?')[0]
         #time = data.t
         if not url:
             return False
