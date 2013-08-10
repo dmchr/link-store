@@ -290,6 +290,8 @@ class ArticleFactory:
             sql, sql_count = self.get_read_sql()
         elif mode == 'liked':
             sql, sql_count = self.get_liked_sql()
+        elif mode == 'browser':
+            sql, sql_count = self.get_browser_sql()
 
         page = int(page)
         offset = items_per_page * (page - 1)
@@ -336,14 +338,14 @@ class ArticleFactory:
         sql = """
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0 AND title IS NOT NULL
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
             ORDER BY ua.rating desc, ua.id DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0 AND title IS NOT NULL
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 0
         """
         return sql, sql_count
 
@@ -351,14 +353,14 @@ class ArticleFactory:
         sql = """
             SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1 AND title IS NOT NULL
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
             ORDER BY ua.read_time DESC
             LIMIT $limit OFFSET $offset
         """
         sql_count = """
             SELECT count(a.id) cnt FROM articles a
             JOIN user_articles ua ON a.id=ua.article_id
-            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1 AND title IS NOT NULL
+            WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_read = 1
         """
         return sql, sql_count
 
@@ -366,13 +368,30 @@ class ArticleFactory:
         sql = """
                 SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
                 JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1 AND title IS NOT NULL
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked = 1
                 ORDER BY ua.like_time DESC
                 LIMIT $limit OFFSET $offset
             """
         sql_count = """
                 SELECT count(a.id) cnt FROM articles a
                 JOIN user_articles ua ON a.id=ua.article_id
-                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1 AND title IS NOT NULL
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL AND ua.is_liked=1
+            """
+        return sql, sql_count
+
+    def get_browser_sql(self):
+        sql = """
+                SELECT a.*, ua.is_liked, ua.is_read, ua.source_count, ua.rating FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
+                ORDER BY ua.id DESC
+                LIMIT $limit OFFSET $offset
+            """
+        sql_count = """
+                SELECT count(a.id) cnt FROM articles a
+                JOIN user_articles ua ON a.id=ua.article_id
+                JOIN articles_locations al ON al.user_article_id=ua.id AND al.location_type='browser'
+                WHERE ua.user_id=$user_id AND a.title IS NOT NULL
             """
         return sql, sql_count
