@@ -14,8 +14,10 @@ t_globals = dict(
     datestr=web.datestr,
     str=str,
     sort=sorted,
-    ctx=web.web_session
+    ctx=web.web_session,
+    metrika_id=config.YA_Metrika_ID
 )
+
 render = web.template.render('templates/', cache=config.cache, globals=t_globals)
 render._keywords['globals']['render'] = render
 
